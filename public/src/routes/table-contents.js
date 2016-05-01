@@ -1,5 +1,6 @@
 import React from 'react'
-import ReactDataGrid from 'react-data-grid'
+
+import DataGrid from '../components/data-grid'
 
 class TableContents extends React.Component {
   constructor (props) {
@@ -19,14 +20,7 @@ class TableContents extends React.Component {
       <div>
         <h1>{this.props.params.name}</h1>
         {this.state.rows.length > 0 &&
-          <ReactDataGrid
-            rowGetter={this.getRowAtIndex}
-            columns={this.getColumns()}
-            rowsCount={this.state.rowCount}
-            minHeight={500}
-            enableCellSelect
-            onRowUpdated={this.onRowUpdate}
-          />
+          <DataGrid {...this.state} onRowUpdate={this.onRowUpdate} />
         }
       </div>
     )
@@ -56,15 +50,8 @@ class TableContents extends React.Component {
     return this.state.rows[index]
   }
 
-  onRowUpdate (event) {
-    const rows = this.state.rows.slice()
-    Object.assign(rows[event.rowIdx] || {}, event.updated)
-    this.setState({rows})
-
-    // Update database
-    const tableName = this.props.params.name
-    const conditions = {[this.state.primaryKey]: rows[event.rowIdx][this.state.primaryKey]}
-    this.props.db.knex(tableName).where(conditions).update(event.updated).then((response) => console.log('updated', response))
+  onRowUpdate (changes) {
+    console.log('update', changes)
   }
 }
 

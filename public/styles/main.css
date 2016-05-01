@@ -1,3 +1,8 @@
 .content {
   padding: 10px;
 }
+
+.data-grid {
+  height: 600px;
+  overflow: hidden;
+}
