@@ -1,17 +1,15 @@
 import React from 'react'
 import ReactDataGrid from 'react-data-grid'
 
-import QueryInput from '../components/query-input'
-
-class Query extends React.Component {
-  constructor () {
-    super()
+class TableContents extends React.Component {
+  constructor (props) {
+    super(props)
     this.state = {
       rows: [],
       rowCount: 0,
-      fields: []
+      fields: [],
+      primaryKey: null
     }
-    this.executeQuery = this.executeQuery.bind(this)
     this.getRowAtIndex = this.getRowAtIndex.bind(this)
     this.onRowUpdate = this.onRowUpdate.bind(this)
   }
@@ -19,28 +17,31 @@ class Query extends React.Component {
   render () {
     return (
       <div>
-        <QueryInput onQuery={this.executeQuery} />
+        <h1>{this.props.params.name}</h1>
         {this.state.rows.length > 0 &&
           <ReactDataGrid
             rowGetter={this.getRowAtIndex}
             columns={this.getColumns()}
             rowsCount={this.state.rowCount}
             minHeight={500}
+            enableCellSelect
+            onRowUpdated={this.onRowUpdate}
           />
         }
       </div>
     )
   }
 
-  executeQuery (query) {
-    this.props.db.query(query).then((response) => {
-      console.log(response)
+  componentDidMount () {
+    const tableName = this.props.params.name
+    this.props.db.getRows(tableName).then((response) => {
       this.setState({
         rows: response.rows,
         rowCount: response.rowCount,
         fields: response.fields
       })
     })
+    this.props.db.describe(tableName).then((response) => this.setState({primaryKey: response.primaryKey}))
   }
 
   getColumns () {
@@ -59,11 +60,17 @@ class Query extends React.Component {
     const rows = this.state.rows.slice()
     Object.assign(rows[event.rowIdx] || {}, event.updated)
     this.setState({rows})
+
+    // Update database
+    const tableName = this.props.params.name
+    const conditions = {[this.state.primaryKey]: rows[event.rowIdx][this.state.primaryKey]}
+    this.props.db.knex(tableName).where(conditions).update(event.updated).then((response) => console.log('updated', response))
   }
 }
 
-Query.propTypes = {
+TableContents.propTypes = {
+  params: React.PropTypes.object,
   db: React.PropTypes.object
 }
 
-export default Query
+export default TableContents

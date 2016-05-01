@@ -6,7 +6,7 @@ class QueryInput extends React.Component {
       <form onSubmit={this.onSubmit.bind(this)}>
         <fieldset className='form-group'>
           <label htmlFor='query-input'>Query</label>
-          <textarea id='query-input' ref='queryInput' className='form-control' defaultValue='select * from building_codes'></textarea>
+          <textarea id='query-input' ref='queryInput' className='form-control'></textarea>
         </fieldset>
         <button type='submit' className='btn btn-primary'>Query</button>
       </form>
