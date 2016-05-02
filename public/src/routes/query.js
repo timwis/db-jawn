@@ -1,7 +1,7 @@
 import React from 'react'
-import ReactDataGrid from 'react-data-grid'
 
 import QueryInput from '../components/query-input'
+import DataGrid from '../components/data-grid'
 
 class Query extends React.Component {
   constructor () {
@@ -12,8 +12,6 @@ class Query extends React.Component {
       fields: []
     }
     this.executeQuery = this.executeQuery.bind(this)
-    this.getRowAtIndex = this.getRowAtIndex.bind(this)
-    this.onRowUpdate = this.onRowUpdate.bind(this)
   }
 
   render () {
@@ -21,12 +19,7 @@ class Query extends React.Component {
       <div>
         <QueryInput onQuery={this.executeQuery} />
         {this.state.rows.length > 0 &&
-          <ReactDataGrid
-            rowGetter={this.getRowAtIndex}
-            columns={this.getColumns()}
-            rowsCount={this.state.rowCount}
-            minHeight={500}
-          />
+          <DataGrid {...this.state} />
         }
       </div>
     )
@@ -41,24 +34,6 @@ class Query extends React.Component {
         fields: response.fields
       })
     })
-  }
-
-  getColumns () {
-    return this.state.fields.map((field) => ({
-      key: field.name,
-      name: field.name,
-      editable: true
-    }))
-  }
-
-  getRowAtIndex (index) {
-    return this.state.rows[index]
-  }
-
-  onRowUpdate (event) {
-    const rows = this.state.rows.slice()
-    Object.assign(rows[event.rowIdx] || {}, event.updated)
-    this.setState({rows})
   }
 }
 

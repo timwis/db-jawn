@@ -32,6 +32,16 @@ class Database {
     })
   }
 
+  update (table, values, conditions) {
+    const statement = this.knex(table)
+    if (conditions) statement.where(conditions)
+    return statement.update(values)
+  }
+
+  insert (table, values) {
+    return this.knex(table).insert(values, '*')
+  }
+
   _getPrimaryKey (table) {
     const sql = `
       SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type

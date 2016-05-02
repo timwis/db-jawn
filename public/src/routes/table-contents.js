@@ -11,7 +11,6 @@ class TableContents extends React.Component {
       fields: [],
       primaryKey: null
     }
-    this.getRowAtIndex = this.getRowAtIndex.bind(this)
     this.onRowUpdate = this.onRowUpdate.bind(this)
   }
 
@@ -38,20 +37,32 @@ class TableContents extends React.Component {
     this.props.db.describe(tableName).then((response) => this.setState({primaryKey: response.primaryKey}))
   }
 
-  getColumns () {
-    return this.state.fields.map((field) => ({
-      key: field.name,
-      name: field.name,
-      editable: true
-    }))
-  }
-
-  getRowAtIndex (index) {
-    return this.state.rows[index]
-  }
-
   onRowUpdate (changes) {
-    console.log('update', changes)
+    const tableName = this.props.params.name
+    const primaryKey = this.state.primaryKey
+    const rows = this.state.rows.slice()
+    changes.map((rowChanges) => {
+      const {rowIndex, updates} = rowChanges
+      const row = rows[rowIndex] || {} // TODO: Won't work if sorting enabled
+      const identifier = row[primaryKey]
+
+      // If updating existing row
+      if (identifier) {
+        Object.assign(row, updates)
+
+        const conditions = {[primaryKey]: identifier}
+        this.props.db.update(tableName, updates, conditions).then((response) => console.log('updated', response))
+      // Otherwise, inserting new row
+      } else {
+        console.log('new row')
+        Object.assign(row, updates)
+        this.props.db.insert(tableName, updates).then((response) => {
+          Object.assign(row, response[0])
+          this.setState({rows})
+        })
+      }
+    })
+    this.setState({rows})
   }
 }
 

@@ -1,11 +1,11 @@
-/*eslint no-new:0*/
 import React from 'react'
 import Handsontable from 'handsontable'
+import {values} from 'lodash'
 
 class DataGrid extends React.Component {
   constructor (props) {
     super(props)
-    this.afterChange = this.afterChange.bind(this)
+    this.handleChange = this.handleChange.bind(this)
   }
 
   render () {
@@ -16,23 +16,41 @@ class DataGrid extends React.Component {
 
   componentDidMount () {
     const columns = this.props.fields.map((field) => field.name)
+    // const rowsCopy = cloneDeep(this.props.rows)
     const opts = {
       data: this.props.rows,
-      colHeaders: columns
+      colHeaders: columns,
+      minSpareRows: 1
+      // observeChanges: true
     }
-    if (this.props.onRowUpdate) opts.afterChange = this.afterChange
-    new Handsontable(this.refs.grid, opts)
+    if (this.props.onRowUpdate) opts.beforeChange = this.handleChange
+    else opts.readOnly = true
+    this.grid = new Handsontable(this.refs.grid, opts)
   }
 
-  afterChange (changes, source) {
+  handleChange (changes, source) {
     // Only trigger for certain types of changes
     if (!['edit', 'empty', 'autofill', 'paste', 'undo', 'redo'].includes(source)) return
 
-    // Convert changes from array of arrays to array of objects for easier use
-    this.props.onRowUpdate(changes.map((change) => {
-      let [rowIndex, property, oldValue, newValue] = change
-      return {rowIndex, property, oldValue, newValue}
-    }))
+    // Map array of each change to an array of row changes
+    const changesByRow = {}
+    changes.map((change) => {
+      const [rowIndex, property, , newValue] = change
+      if (!changesByRow[rowIndex]) changesByRow[rowIndex] = {rowIndex, updates: {}}
+      changesByRow[rowIndex].updates[property] = newValue
+    })
+
+    // Pass array of row changes to parent component's handler
+    this.props.onRowUpdate(values(changesByRow))
+
+    // Override default behavior by not saving changes (parent component will do that)
+    return false
+  }
+
+  // Listen for props changes and update the grid. This overrides default
+  // behavior of Handsontable in order to treat state as immutable
+  componentWillReceiveProps () {
+    this.grid.render()
   }
 }
 
