@@ -15,16 +15,23 @@ class DataGrid extends React.Component {
   }
 
   componentDidMount () {
-    const columns = this.props.fields.map((field) => field.name)
+    const colHeaders = this.props.fields.map((field) => field.name || field)
+    const columns = colHeaders.map((header) => ({data: header}))
     // const rowsCopy = cloneDeep(this.props.rows)
     const opts = {
       data: this.props.rows,
-      colHeaders: columns,
-      minSpareRows: 1
+      colHeaders: colHeaders,
+      columns: columns
       // observeChanges: true
     }
-    if (this.props.onRowUpdate) opts.beforeChange = this.handleChange
-    else opts.readOnly = true
+    // If editable
+    if (this.props.onRowUpdate) {
+      opts.beforeChange = this.handleChange
+      opts.minSpareRows = 1
+    // Otherwise read-only
+    } else {
+      opts.readOnly = true
+    }
     this.grid = new Handsontable(this.refs.grid, opts)
   }
 

@@ -1,4 +1,5 @@
 import React from 'react'
+import {Link} from 'react-router'
 
 import DataGrid from '../components/data-grid'
 
@@ -7,7 +8,6 @@ class TableContents extends React.Component {
     super(props)
     this.state = {
       rows: [],
-      rowCount: 0,
       fields: [],
       primaryKey: null
     }
@@ -15,9 +15,12 @@ class TableContents extends React.Component {
   }
 
   render () {
+    const tableName = this.props.params.name
+    const schemaPath = `tables/${tableName}/schema`
     return (
       <div>
-        <h1>{this.props.params.name}</h1>
+        <h1>{tableName}</h1>
+        <Link to={schemaPath}>Edit Schema</Link>
         {this.state.rows.length > 0 &&
           <DataGrid {...this.state} onRowUpdate={this.onRowUpdate} />
         }
@@ -30,7 +33,6 @@ class TableContents extends React.Component {
     this.props.db.getRows(tableName).then((response) => {
       this.setState({
         rows: response.rows,
-        rowCount: response.rowCount,
         fields: response.fields
       })
     })

@@ -7,6 +7,7 @@ import Database from './models/database'
 import Navbar from './components/navbar'
 import ListTables from './routes/list-tables'
 import TableContents from './routes/table-contents'
+import TableSchema from './routes/table-schema'
 import Query from './routes/query'
 
 class App extends React.Component {
@@ -36,6 +37,7 @@ ReactDOM.render((
     <Route path='/' component={App}>
       <IndexRoute component={ListTables} />
       <Route path='tables/:name' component={TableContents} />
+      <Route path='tables/:name/schema' component={TableSchema} />
       <Route path='query' component={Query} />
     </Route>
   </Router>
