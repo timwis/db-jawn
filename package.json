@@ -29,6 +29,7 @@
     "webpack-dev-server": "^1.14.1"
   },
   "dependencies": {
+    "handsontable": "^0.24.3",
     "knex": "^0.10.0",
     "pg": "^4.5.5",
     "react": "^0.14.8",
