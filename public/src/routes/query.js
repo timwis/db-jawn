@@ -26,7 +26,6 @@ class Query extends React.Component {
 
   executeQuery (query) {
     this.props.db.query(query).then((response) => {
-      console.log(response)
       this.setState({
         rows: response.rows,
         fields: response.fields

@@ -9,7 +9,6 @@ class Database {
   }
 
   query (sql) {
-    console.log('Query', sql)
     return this.knex.raw(sql)
   }
 
@@ -44,7 +43,6 @@ class Database {
   }
 
   updateColumn (table, column, changes) {
-    console.log(arguments)
     const sql = [
       `ALTER TABLE ${table}`
     ]
@@ -56,7 +54,7 @@ class Database {
     }
     if (changes.nullable == 'true') sql.push(`ALTER COLUMN ${column} SET NOT NULL`)
     if (changes.nullable == 'false') sql.push(`ALTER COLUMN ${column} DROP NOT NULL`)
-    console.log(sql.join('\n'))
+
     return this.query(sql.join('\n'))
   }
 

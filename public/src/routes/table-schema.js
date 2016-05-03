@@ -31,7 +31,6 @@ class TableSchema extends React.Component {
 
   componentDidMount () {
     this.props.db.describe(this.props.params.name).then((response) => {
-      console.log(response)
       this.setState(response)
     })
   }
@@ -56,7 +55,6 @@ class TableSchema extends React.Component {
         console.log('new row')
         Object.assign(field, updates)
         this.props.db.insertColumn(tableName, updates.name).then((response) => {
-          console.log(response)
           Object.assign(field, response[0])
           this.setState({fields})
         })
