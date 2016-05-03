@@ -19,8 +19,3 @@ app.on('ready', function () {
     mainWindow = null
   })
 })
-
-ipcMain.on('asynchronous-message', function (event, arg) {
-  console.log(arg)
-  event.sender.send('asynchronous-reply', 'pong')
-})

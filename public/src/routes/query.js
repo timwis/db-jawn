@@ -8,7 +8,6 @@ class Query extends React.Component {
     super()
     this.state = {
       rows: [],
-      rowCount: 0,
       fields: []
     }
     this.executeQuery = this.executeQuery.bind(this)
@@ -27,10 +26,8 @@ class Query extends React.Component {
 
   executeQuery (query) {
     this.props.db.query(query).then((response) => {
-      console.log(response)
       this.setState({
         rows: response.rows,
-        rowCount: response.rowCount,
         fields: response.fields
       })
     })
