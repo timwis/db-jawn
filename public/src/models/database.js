@@ -9,6 +9,7 @@ class Database {
   }
 
   query (sql) {
+    console.log('Query', sql)
     return this.knex.raw(sql)
   }
 
@@ -40,6 +41,27 @@ class Database {
 
   insert (table, values) {
     return this.knex(table).insert(values, '*')
+  }
+
+  updateColumn (table, column, changes) {
+    console.log(arguments)
+    const sql = [
+      `ALTER TABLE ${table}`
+    ]
+    if (changes.name) sql.push(`RENAME COLUMN ${column} TO ${changes.name}`)
+    if (changes.type) sql.push(`ALTER COLUMN ${column} TYPE ${changes.type}` + (changes.maxLength ? ` (${changes.maxLength})` : ''))
+    if (changes.defaultValue !== undefined) {
+      if (changes.defaultValue === '') sql.push(`ALTER COLUMN ${column} DROP DEFAULT`)
+      else sql.push(`ALTER COLUMN ${column} SET DEFAULT ${changes.defaultValue}`)
+    }
+    if (changes.nullable == 'true') sql.push(`ALTER COLUMN ${column} SET NOT NULL`)
+    if (changes.nullable == 'false') sql.push(`ALTER COLUMN ${column} DROP NOT NULL`)
+    console.log(sql.join('\n'))
+    return this.query(sql.join('\n'))
+  }
+
+  insertColumn (table, column) {
+    return this.query(`ALTER TABLE ${table} ADD COLUMN ${column} text`)
   }
 
   _getPrimaryKey (table) {
