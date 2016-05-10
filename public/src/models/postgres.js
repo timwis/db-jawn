@@ -1,6 +1,6 @@
 import knex from 'knex'
 
-class Database {
+class Postgres {
   constructor (config) {
     this.knex = knex({
       client: 'pg',
@@ -78,4 +78,4 @@ class Database {
   }
 }
 
-export default Database
+export default Postgres

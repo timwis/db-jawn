@@ -25,16 +25,21 @@
     "babel-preset-es2015": "^6.5.0",
     "babel-preset-react": "^6.5.0",
     "electron-prebuilt": "^0.37.7",
+    "redux-devtools": "^3.3.0",
+    "redux-devtools-dock-monitor": "^1.1.1",
+    "redux-devtools-log-monitor": "^1.0.11",
     "webpack": "^1.12.13",
     "webpack-dev-server": "^1.14.1"
   },
   "dependencies": {
-    "handsontable": "^0.24.3",
     "knex": "^0.10.0",
     "pg": "^4.5.5",
     "react": "^0.14.8",
-    "react-data-grid": "^0.14.28",
+    "react-data-grid": "^0.14.29",
     "react-dom": "^0.14.8",
-    "react-router": "^2.4.0"
+    "react-redux": "^4.4.5",
+    "react-router": "^2.4.0",
+    "redux": "^3.5.2",
+    "redux-thunk": "^2.0.1"
   }
 }

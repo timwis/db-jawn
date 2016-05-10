@@ -1,70 +1,41 @@
 import React from 'react'
-import Handsontable from 'handsontable'
-import {values} from 'lodash'
+import ReactDataGrid from 'react-data-grid'
 
 class DataGrid extends React.Component {
   constructor (props) {
     super(props)
-    this.handleChange = this.handleChange.bind(this)
+    this.rowByIndex = this.rowByIndex.bind(this)
   }
 
   render () {
+    const colHeaders = this.props.fields.map((field) => field.name || field)
+    const columns = colHeaders.map((header) => ({key: header, name: header, editable: true}))
+    const rowCount = this.props.rows.length
     return (
-      <div ref='grid' className='data-grid' />
+      <div>
+        <button onClick={this.props.onAddRow} className='btn btn-default'>Add Row</button>
+        <ReactDataGrid
+          columns={columns}
+          rowGetter={this.rowByIndex}
+          rowsCount={rowCount}
+          enableCellSelect
+          onRowUpdated={this.props.onRowUpdate}
+          minHeight={500}
+        />
+      </div>
     )
   }
 
-  componentDidMount () {
-    const colHeaders = this.props.fields.map((field) => field.name || field)
-    const columns = colHeaders.map((header) => ({data: header}))
-    // const rowsCopy = cloneDeep(this.props.rows)
-    const opts = {
-      data: this.props.rows,
-      colHeaders: colHeaders,
-      columns: columns
-      // observeChanges: true
-    }
-    // If editable
-    if (this.props.onRowUpdate) {
-      opts.beforeChange = this.handleChange
-      opts.minSpareRows = 1
-    // Otherwise read-only
-    } else {
-      opts.readOnly = true
-    }
-    this.grid = new Handsontable(this.refs.grid, opts)
-  }
-
-  handleChange (changes, source) {
-    // Only trigger for certain types of changes
-    if (!['edit', 'empty', 'autofill', 'paste', 'undo', 'redo'].includes(source)) return
-
-    // Map array of each change to an array of row changes
-    const changesByRow = {}
-    changes.map((change) => {
-      const [rowIndex, property, , newValue] = change
-      if (!changesByRow[rowIndex]) changesByRow[rowIndex] = {rowIndex, updates: {}}
-      changesByRow[rowIndex].updates[property] = newValue
-    })
-
-    // Pass array of row changes to parent component's handler
-    this.props.onRowUpdate(values(changesByRow))
-
-    // Override default behavior by not saving changes (parent component will do that)
-    return false
-  }
-
-  // Listen for props changes and update the grid. This overrides default
-  // behavior of Handsontable in order to treat state as immutable
-  componentWillReceiveProps () {
-    this.grid.render()
+  rowByIndex (index) {
+    return this.props.rows[index]
   }
 }
 
 DataGrid.propTypes = {
   rows: React.PropTypes.array,
   fields: React.PropTypes.array,
-  onRowUpdate: React.PropTypes.func
+  onRowUpdate: React.PropTypes.func,
+  onAddRow: React.PropTypes.func
 }
 
 export default DataGrid
