@@ -70,3 +70,8 @@ export function insertRow (dbConfig, tableName, contents) {
     })
   }
 }
+
+// TODO
+export function updateColumn (dbConfig, tableName, column, updates, rowIndex) {
+  console.log('updateColumn', arguments)
+}

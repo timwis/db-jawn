@@ -28,9 +28,8 @@ class TableContents extends React.Component {
           <DataGrid
             rows={this.props.rows}
             fields={this.props.schema.fields}
-            primaryKey={this.props.schema.primaryKey}
             onRowUpdate={this.onRowUpdate}
-            onAddRow={this.onAddRow} 
+            onAddRow={this.onAddRow}
           />
         }
       </div>
@@ -54,14 +53,8 @@ class TableContents extends React.Component {
     const row = this.props.rows[rowIndex] || {} // TODO: Won't work if sorting enabled
     const primaryKeyValue = row[primaryKey]
 
-    // If updating existing row
-    // if (primaryKeyValue) {
     const conditions = {[primaryKey]: primaryKeyValue}
     dispatch(updateRow(database, tableName, updates, conditions, rowIndex))
-    // Otherwise, inserting new row
-    // } else {
-    //   dispatch(insertRow(database, tableName, updates))
-    // }
   }
 
   onAddRow () {

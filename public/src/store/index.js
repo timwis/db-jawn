@@ -1,8 +1,8 @@
 import { createStore, applyMiddleware, compose } from 'redux'
 import thunk from 'redux-thunk'
 
-import DevTools from './containers/dev-tools'
-import rootReducer from './reducers'
+import DevTools from '../containers/dev-tools'
+import rootReducer from '../reducers'
 
 function configureStore (initialState) {
   let enhancer = applyMiddleware(thunk)

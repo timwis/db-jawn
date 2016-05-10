@@ -13,7 +13,7 @@ class DataGrid extends React.Component {
     const rowCount = this.props.rows.length
     return (
       <div>
-        <button onClick={this.props.onAddRow} className='btn btn-secondary'>Add Row</button>
+        {this.props.onAddRow && <button onClick={this.props.onAddRow} className='btn btn-secondary'>Add Row</button>}
         <ReactDataGrid
           columns={columns}
           rowGetter={this.rowByIndex}
