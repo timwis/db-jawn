@@ -10,6 +10,7 @@ import ListTables from './containers/list-tables'
 import TableContents from './containers/table-contents'
 import TableSchema from './containers/table-schema'
 import Query from './containers/query'
+import Database from './containers/database'
 
 // Setup store
 const initialState = {
@@ -23,7 +24,8 @@ ReactDOM.render((
   <Provider store={store}>
     <Router history={hashHistory}>
       <Route path='/' component={App}>
-        <IndexRoute component={ListTables} />
+        <IndexRoute component={Database} />
+        <Route path='tables' component={ListTables} />
         <Route path='tables/:name' component={TableContents} />
         <Route path='tables/:name/schema' component={TableSchema} />
         <Route path='query' component={Query} />

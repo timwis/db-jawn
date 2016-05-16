@@ -75,3 +75,12 @@ export function insertRow (dbConfig, tableName, contents) {
 export function updateColumn (dbConfig, tableName, column, updates, rowIndex) {
   console.log('updateColumn', arguments)
 }
+
+export const RECEIVE_DB_CONFIG = 'RECEIVE_DB_CONFIG'
+
+export function saveDbConfig (dbConfig) {
+  return {
+    type: RECEIVE_DB_CONFIG,
+    config: dbConfig
+  }
+}

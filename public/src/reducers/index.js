@@ -3,7 +3,7 @@ import { combineReducers } from 'redux'
 import {
   RECEIVE_TABLES, RECEIVE_ROWS,
   RECEIVE_SCHEMA, RECEIVE_ROW_UPDATES,
-  RECEIVE_NEW_ROW
+  RECEIVE_NEW_ROW, RECEIVE_DB_CONFIG
 } from '../actions'
 
 function tables (state = [], action) {
@@ -17,6 +17,10 @@ function tables (state = [], action) {
 
 // stub
 function database (state = {}, action) {
+  switch (action.type) {
+    case RECEIVE_DB_CONFIG:
+      return Object.assign({}, state, action.config)
+  }
   return state
 }
 

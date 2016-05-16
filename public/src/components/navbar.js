@@ -8,10 +8,10 @@ class Navbar extends React.Component {
         <Link to='/' className='navbar-brand'>DataFace</Link>
         <ul className='nav navbar-nav'>
           <li className='nav-item'>
-            <Link to='/' className='nav-link' activeClassName='active' onlyActiveOnIndex>Tables</Link>
+            <Link to='/' className='nav-link' activeClassName='active' onlyActiveOnIndex>Database</Link>
           </li>
           <li className='nav-item'>
-            <Link to='query' className='nav-link' activeClassName='active'>Query</Link>
+            <Link to='tables' className='nav-link' activeClassName='active'>Tables</Link>
           </li>
         </ul>
       </nav>
