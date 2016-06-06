@@ -11,7 +11,7 @@ module.exports = (params, state, send) => choo.view`
         ${tableList(params, state, send)}
       </div>
       <div class="col-md-9">
-        ${params.name && tableRows(params, state, send)}
+        ${tableRows(params, state, send)}
       </div>
     </div>
   </div>`

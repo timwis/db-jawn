@@ -7,8 +7,6 @@ const views = {
 const app = choo()
 
 app.model(require('./models/db'))
-// app.model(require('./models/tables'))
-// app.model(require('./models/table'))
 
 app.router((route) => [
   route('/', views.connect),

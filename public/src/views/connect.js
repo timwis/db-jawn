@@ -5,10 +5,6 @@ module.exports = (params, state, send) => {
   const onSubmit = (e) => {
     const payload = getFormData(e.target)
     send('db:config', {payload})
-    send('db:clearTables')
-    send('db:getTables')
-    send('app:location', {location: '/tables'})
-    // window.history.pushState(null, null, '/tables')
     window.location.hash = 'tables'
     e.preventDefault()
   }
