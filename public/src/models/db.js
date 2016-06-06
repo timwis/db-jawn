@@ -69,4 +69,11 @@ const model = {
   }
 }
 
+// Allow specifying default connection details in a file for development
+if (process.env.NODE_ENV === 'development') {
+  const initialCredentials = require('../config')
+  model.state.config = initialCredentials
+  model.state.instance = knex({ client: 'pg', connection: initialCredentials })
+}
+
 module.exports = model

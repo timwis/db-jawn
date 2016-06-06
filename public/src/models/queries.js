@@ -4,6 +4,7 @@ module.exports = {
     FROM pg_catalog.pg_tables
     WHERE schemaname='public'
     ORDER BY tablename`,
+
   getPrimaryKey: (table) => `
     SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type
     FROM pg_index i
@@ -12,6 +13,7 @@ module.exports = {
       AND a.attnum = ANY(i.indkey)
     WHERE i.indrelid = '${table}'::regclass
       AND i.indisprimary`,
+
   getRows: (table) => `
     SELECT *
     FROM ${table}`

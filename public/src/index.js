@@ -10,8 +10,10 @@ app.model(require('./models/db'))
 
 app.router((route) => [
   route('/', views.connect),
-  route('/tables', views.databaseLayout, [
-    route('/:name', views.databaseLayout)
+  route('/tables', views.databaseLayout(), [
+    route('/:name', views.databaseLayout('rows'), [
+      route('/schema', views.databaseLayout('schema'))
+    ])
   ])
 ])
 
