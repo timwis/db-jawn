@@ -18,19 +18,29 @@ const model = {
       name: '',
       primaryKey: '',
       fields: [],
-      rows: []
+      rows: [],
+      selectedRowIndex: null
     }
   },
   reducers: {
     config: (action, state) => ({
       config: action.payload,
-      instance: knex({ client: 'pg', connection: action.payload }),
+      instance: knex({ client: 'pg', connection: action.payload }), // stored in state because it creates connection pools
       tables: [],
       fetchedTables: false,
       selectedTable: model.state.selectedTable // reset to default
     }),
     receiveTables: (action, state) => ({ tables: action.payload, fetchedTables: true }),
-    receiveTable: (action, state) => ({ selectedTable: action.payload })
+    receiveTable: (action, state) => ({ selectedTable: action.payload }),
+    setSelectedRow: (action, state) => {
+      const update = {selectedRowIndex: action.index}
+      return { selectedTable: Object.assign({}, state.selectedTable, update) }
+    },
+    receiveRowUpdate: (action, state) => {
+      const newRows = state.selectedTable.rows.slice()
+      Object.assign(newRows[action.index], action.payload)
+      return { selectedTable: Object.assign({}, state.selectedTable, {rows: newRows}) }
+    }
   },
   effects: {
     getTables: (action, state, send) => {
@@ -53,7 +63,8 @@ const model = {
           primaryKey: primaryKeyResults.rows.length > 0 && primaryKeyResults.rows[0].attname,
           fields: [],
           rows: rowsResults.rows,
-          name: table
+          name: table,
+          selectedRowIndex: null
         }
 
         // Map fields object to an array
@@ -65,6 +76,14 @@ const model = {
         send('db:receiveTable', {payload})
       })
       .catch(() => console.error('error fetching table', arguments))
+    },
+    updateRow: (action, state, send) => {
+      const { table, index, payload } = action
+      const primaryKey = state.selectedTable.primaryKey
+      const row = state.selectedTable.rows[index]
+      const conditions = {[primaryKey]: row[primaryKey]}
+      state.instance(table).where(conditions).update(payload)
+      .then((results) => results > 0 && send('db:receiveRowUpdate', { table, index, payload }))
     }
   }
 }
