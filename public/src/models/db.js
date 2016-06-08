@@ -40,6 +40,10 @@ const model = {
       const newRows = state.selectedTable.rows.slice()
       Object.assign(newRows[action.index], action.payload)
       return { selectedTable: Object.assign({}, state.selectedTable, {rows: newRows}) }
+    },
+    receiveNewRow: (action, state) => {
+      const newRows = [ ...state.selectedTable.rows, action.payload ]
+      return { selectedTable: Object.assign({}, state.selectedTable, {rows: newRows}) }
     }
   },
   effects: {
@@ -84,6 +88,11 @@ const model = {
       const conditions = {[primaryKey]: row[primaryKey]}
       state.instance(table).where(conditions).update(payload)
       .then((results) => results > 0 && send('db:receiveRowUpdate', { table, index, payload }))
+    },
+    insertRow: (action, state, send) => {
+      const { table, payload } = action
+      state.instance(table).insert(payload, '*')
+      .then((results) => results.length > 0 && send('db:receiveNewRow', { table, payload: results[0] }))
     }
   }
 }
