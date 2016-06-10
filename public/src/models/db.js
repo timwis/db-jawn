@@ -30,8 +30,12 @@ const model = {
       fetchedTables: false,
       selectedTable: model.state.selectedTable // reset to default
     }),
-    receiveTables: (action, state) => ({ tables: action.payload, fetchedTables: true }),
-    receiveTable: (action, state) => ({ selectedTable: action.payload }),
+    receiveTableList: (action, state) => {
+      return { tables: action.payload, fetchedTables: true }
+    },
+    receiveTable: (action, state) => {
+      return { selectedTable: action.payload }
+    },
     setSelectedRow: (action, state) => {
       const update = {selectedRowIndex: action.index}
       return { selectedTable: Object.assign({}, state.selectedTable, update) }
@@ -47,11 +51,11 @@ const model = {
     }
   },
   effects: {
-    getTables: (action, state, send) => {
+    getTableList: (action, state, send) => {
       state.instance.raw(queries.getTables())
       .then((response) => {
         const tables = response.rows.map((table) => table.tablename)
-        send('db:receiveTables', { payload: tables })
+        send('db:receiveTableList', { payload: tables })
       })
     },
     getTable: (action, state, send) => {
@@ -83,16 +87,22 @@ const model = {
     },
     updateRow: (action, state, send) => {
       const { table, index, payload } = action
-      const primaryKey = state.selectedTable.primaryKey
-      const row = state.selectedTable.rows[index]
-      const conditions = {[primaryKey]: row[primaryKey]}
-      state.instance(table).where(conditions).update(payload)
-      .then((results) => results > 0 && send('db:receiveRowUpdate', { table, index, payload }))
+      if (Object.keys(payload).length) {
+        const primaryKey = state.selectedTable.primaryKey
+        const row = state.selectedTable.rows[index]
+        const conditions = {[primaryKey]: row[primaryKey]}
+        state.instance(table).where(conditions).update(payload)
+        .then((results) => {
+          if (results > 0) send('db:receiveRowUpdate', { table, index, payload })
+        })
+      }
     },
     insertRow: (action, state, send) => {
       const { table, payload } = action
       state.instance(table).insert(payload, '*')
-      .then((results) => results.length > 0 && send('db:receiveNewRow', { table, payload: results[0] }))
+      .then((results) => {
+        if (results.length > 0) send('db:receiveNewRow', { table, payload: results[0] })
+      })
     }
   }
 }

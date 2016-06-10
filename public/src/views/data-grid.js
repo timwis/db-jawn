@@ -1,14 +1,21 @@
 const view = require('choo').view
+const {zipObject} = require('lodash')
 /**
  * Data Grid
  * Options:
- * - fields (Array of strings, required)
+ * - fields (Array of strings or array of objects with key/title properties, required)
  * - rows (Array of objects, required)
  */
 module.exports = (opts = {}) => {
-  const { fields, rows, selectedRowIndex,
-    onSelectRow, onUpdateRow, onInsertRow } = opts
-
+  const noop = () => {}
+  const {
+    fields,
+    rows,
+    selectedRowIndex,
+    onSelectRow = noop,
+    onUpdateRow = noop,
+    onInsertRow = noop } = opts
+  const fieldKeys = fields.map((field) => field.key || field)
   const changesObserved = {} // stores any changes made to the selected row
 
   return view`
@@ -18,7 +25,7 @@ module.exports = (opts = {}) => {
         <thead>
           <tr>
             <th></th>
-            ${fields.map((field) => view`<th>${field}</th>`)}
+            ${fields.map((field) => view`<th>${field.title || field.key || field}</th>`)}
           </tr>
         </thead>` : ''}
 
@@ -38,7 +45,7 @@ module.exports = (opts = {}) => {
       return view`
         <tr class="table-info">
           <td>${saveEditButton(index)}</td>
-          ${fields.map((field) => view`
+          ${fieldKeys.map((field) => view`
             <td contenteditable="true"
               oninput=${(e) => changesObserved[field] = e.target.innerText}>
               ${row[field]}
@@ -48,7 +55,7 @@ module.exports = (opts = {}) => {
       return view`
         <tr>
           <td>${editButton(index)}</td>
-          ${fields.map((field) => view`
+          ${fieldKeys.map((field) => view`
             <td>${row[field]}</td>`)}
         </tr>`
     }
@@ -63,7 +70,7 @@ module.exports = (opts = {}) => {
       return view`
         <tr class="table-info">
           <td>${saveNewRowButton()}</td>
-          ${fields.map((field) => view`
+          ${fieldKeys.map((field) => view`
             <td contenteditable="true"
               oninput=${(e) => changesObserved[field] = e.target.innerText}>
             </td>`)}
@@ -89,16 +96,38 @@ module.exports = (opts = {}) => {
   function saveEditButton (index) {
     return view`
       <i class="fa fa-save" onclick=${(e) => {
-        onSelectRow(null)
-        onUpdateRow(index, changesObserved)
+        const row = e.target.closest('tr')
+        const rowData = getRowData(row)
+        if (validate(rowData)) {
+          onSelectRow(null)
+          onUpdateRow(index, changesObserved)
+        } else {
+          console.warn('Row data is not valid', rowData)
+        }
       }}></i>`
   }
 
   function saveNewRowButton () {
     return view`
       <i class="fa fa-save" onclick=${(e) => {
-        onSelectRow(null)
-        onInsertRow(changesObserved)
+        const row = e.target.closest('tr')
+        const rowData = getRowData(row)
+        if (validate(rowData)) {
+          onSelectRow(null)
+          onInsertRow(changesObserved)
+        } else {
+          console.warn('Row data is not valid', rowData)
+        }
       }}></i>`
+  }
+
+  function getRowData (row) {
+    const rowValues = Array.from(row.children).map((child) => child.innerText).slice(1) // first column is edit button
+    return zipObject(fieldKeys, rowValues)
+  }
+
+  function validate (rowData) {
+    return fields.filter((field) => typeof field.validate === 'function')
+      .every((field) => field.validate(rowData[field.key], rowData))
   }
 }

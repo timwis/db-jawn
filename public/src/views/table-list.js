@@ -2,7 +2,7 @@ const choo = require('choo')
 
 module.exports = (params, state, send) => {
   if (state.db.instance && !state.db.fetchedTables) {
-    send('db:getTables')
+    send('db:getTableList')
   }
 
   return choo.view`
