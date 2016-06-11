@@ -42,13 +42,13 @@ module.exports = (opts = {}) => {
 
     </table>`
 
-  function editableRow (index, rowData) {
+  function editableRow (index, rowData = {}) {
     // cache row element reference for use in oninput
     const rowEl = view`
       <tr class="table-info">
         <td>${saveEditButton(index)}</td>
         ${fields.map((field) => view`
-          <td contenteditable="true"
+          <td contenteditable="${field.editable === false ? 'false' : 'true'}"
             oninput=${(e) => onInput(e.target, field, rowEl)}>
             ${rowData[field.key || field]}
           </td>`)}

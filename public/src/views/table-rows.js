@@ -8,10 +8,11 @@ module.exports = (params, state, send) => {
     send('db:getTable', { name: table })
   }
 
-  const { fields, rows, selectedRowIndex } = state.db.selectedTable
+  const { fields, rows, primaryKey, selectedRowIndex } = state.db.selectedTable
+  const fieldsObject = fields.map((field) => ({ key: field.name, editable: (field.name !== primaryKey) }))
 
   return dataGrid({
-    fields: fields.map((field) => field.name),
+    fields: fieldsObject,
     rows,
     selectedRowIndex,
     onSelectRow: (index) => send('db:setSelectedRow', {index}),
