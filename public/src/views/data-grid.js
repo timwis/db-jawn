@@ -15,6 +15,7 @@ module.exports = (opts = {}) => {
     onSelectRow = noop,
     onUpdateRow = noop,
     onInsertRow = noop } = opts
+  const newRowIndex = rows.length // (highest index plus one - a bit hacky)
   const fieldKeys = fields.map((field) => field.key || field)
   const changesObserved = {} // stores any changes made to the selected row
 
@@ -31,58 +32,55 @@ module.exports = (opts = {}) => {
 
       ${rows.length ? view`
         <tbody>
-          ${rows.map(tableRow)}
-          ${blankTableRow()}
+          ${rows.map((row, index) => selectedRowIndex === index
+            ? editableRow(index, row)
+            : displayRow(index, row))}
+          ${selectedRowIndex === newRowIndex
+            ? editableRow(newRowIndex)
+            : blankRow(newRowIndex)}
         </tbody>` : ''}
 
     </table>`
 
-  // Creates a <tr> with <td>s for use in the data table
-  // If the row index is the one that's selected (according to the state),
-  // highlight it, make it editable, and listen to typing on it
-  function tableRow (row, index) {
-    if (selectedRowIndex === index) {
-      return view`
-        <tr class="table-info">
-          <td>${saveEditButton(index)}</td>
-          ${fieldKeys.map((field) => view`
-            <td contenteditable="true"
-              oninput=${(e) => changesObserved[field] = e.target.innerText}>
-              ${row[field]}
-            </td>`)}
-        </tr>`
-    } else {
-      return view`
-        <tr>
-          <td>${editButton(index)}</td>
-          ${fieldKeys.map((field) => view`
-            <td>${row[field]}</td>`)}
-        </tr>`
-    }
+  function editableRow (index, rowData) {
+    // cache row element reference for use in oninput
+    const rowEl = view`
+      <tr class="table-info">
+        <td>${saveEditButton(index)}</td>
+        ${fields.map((field) => view`
+          <td contenteditable="true"
+            oninput=${(e) => onInput(e.target, field, rowEl)}>
+            ${rowData[field.key || field]}
+          </td>`)}
+      </tr>`
+    return rowEl
   }
 
-  // Creates an "Click here to add a new row" row for use in the data table
-  // When you click on the row, it turns into an empty row that is selected/fillable
-  function blankTableRow () {
-    const newRowIndex = rows.length // (highest index plus one - a bit hacky)
+  function displayRow (index, rowData) {
+    return view`
+      <tr>
+        <td>${editButton(index)}</td>
+        ${fields.map((field) => view`
+          <td>${rowData[field.key || field]}</td>`)}
+      </tr>`
+  }
 
-    if (selectedRowIndex === newRowIndex) {
-      return view`
-        <tr class="table-info">
-          <td>${saveNewRowButton()}</td>
-          ${fieldKeys.map((field) => view`
-            <td contenteditable="true"
-              oninput=${(e) => changesObserved[field] = e.target.innerText}>
-            </td>`)}
-        </tr>`
-    } else {
-      return view`
-        <tr>
-          <td colspan="${fields.length + 1}"
-            onclick=${(e) => onSelectRow(newRowIndex)}>
-            Click to add a new row
-          </td>
-        </tr>`
+  function blankRow (index) {
+    return view`
+      <tr>
+        <td colspan="${fields.length + 1}"
+          onclick=${(e) => onSelectRow(index)}>
+          Click to add a new row
+        </td>
+      </tr>`
+  }
+
+  function onInput (el, field, row) {
+    changesObserved[field.key || field] = el.innerText
+    if (typeof field.validate === 'function') {
+      const rowData = getRowData(row)
+      const isValid = field.validate(el.innerText, rowData)
+      el.classList.toggle('invalid', !isValid)
     }
   }
 
@@ -97,26 +95,12 @@ module.exports = (opts = {}) => {
     return view`
       <i class="fa fa-save" onclick=${(e) => {
         const row = e.target.closest('tr')
-        const rowData = getRowData(row)
-        if (validate(rowData)) {
+        const isNewRow = index >= rows.length
+        if (isRowValid(row)) {
           onSelectRow(null)
-          onUpdateRow(index, changesObserved)
+          isNewRow ? onInsertRow(changesObserved) : onUpdateRow(index, changesObserved)
         } else {
-          console.warn('Row data is not valid', rowData)
-        }
-      }}></i>`
-  }
-
-  function saveNewRowButton () {
-    return view`
-      <i class="fa fa-save" onclick=${(e) => {
-        const row = e.target.closest('tr')
-        const rowData = getRowData(row)
-        if (validate(rowData)) {
-          onSelectRow(null)
-          onInsertRow(changesObserved)
-        } else {
-          console.warn('Row data is not valid', rowData)
+          console.warn('Cannot save because of validation errors')
         }
       }}></i>`
   }
@@ -126,8 +110,7 @@ module.exports = (opts = {}) => {
     return zipObject(fieldKeys, rowValues)
   }
 
-  function validate (rowData) {
-    return fields.filter((field) => typeof field.validate === 'function')
-      .every((field) => field.validate(rowData[field.key], rowData))
+  function isRowValid (row) {
+    return Array.from(row.children).slice(1).every((child) => !child.classList.contains('invalid'))
   }
 }
