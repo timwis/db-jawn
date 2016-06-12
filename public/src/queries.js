@@ -16,5 +16,25 @@ module.exports = {
 
   getRows: (table) => `
     SELECT *
-    FROM ${table}`
+    FROM ${table}`,
+
+  insertField: (table, payload) => `
+    ALTER TABLE ${table}
+    ADD COLUMN ${payload.name} ${payload.type} ${(payload.maxLength ? `(${payload.maxLength})` : '')}`,
+
+  updateField: (table, column, changes) => {
+    const sql = [
+      `ALTER TABLE ${table}`
+    ]
+    if (changes.name) sql.push(`RENAME COLUMN ${column} TO ${changes.name}`)
+    if (changes.type) sql.push(`ALTER COLUMN ${column} TYPE ${changes.type}` + (changes.maxLength ? ` (${changes.maxLength})` : ''))
+    if (changes.defaultValue !== undefined) {
+      if (changes.defaultValue === '') sql.push(`ALTER COLUMN ${column} DROP DEFAULT`)
+      else sql.push(`ALTER COLUMN ${column} SET DEFAULT ${changes.defaultValue}`)
+    }
+    if (changes.nullable == 'true') sql.push(`ALTER COLUMN ${column} SET NOT NULL`)
+    if (changes.nullable == 'false') sql.push(`ALTER COLUMN ${column} DROP NOT NULL`)
+
+    return sql.join('\n')
+  }
 }

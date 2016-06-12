@@ -24,6 +24,15 @@ module.exports = {
     receiveNewRow: (action, state) => {
       const newRows = [ ...state.rows, action.payload ]
       return { rows: newRows }
+    },
+    receiveFieldUpdate: (action, state) => {
+      const newFields = state.fields.slice()
+      Object.assign(newFields[action.index], action.payload)
+      return { fields: newFields }
+    },
+    receiveNewField: (action, state) => {
+      const newFields = [ ...state.fields, action.payload ]
+      return { fields: newFields }
     }
   },
   effects: {
@@ -67,10 +76,33 @@ module.exports = {
     },
     insertRow: (action, state, send) => {
       const { instance, payload } = action
-      instance(state.name).insert(payload, '*')
-      .then((results) => {
-        if (results.length > 0) send('table:receiveNewRow', { payload: results[0] })
-      })
+      if (Object.keys(payload).length) {
+        instance(state.name).insert(payload, '*')
+        .then((results) => {
+          if (results.length > 0) send('table:receiveNewRow', { payload: results[0] })
+        })
+      }
+    },
+    updateField: (action, state, send) => {
+      const { instance, index, payload } = action
+      if (Object.keys(payload).length) {
+        const column = state.fields[index].name
+        const sql = queries.updateField(state.name, column, payload)
+        instance.raw(sql)
+        .then((results) => {
+          send('table:receiveFieldUpdate', { index, payload })
+        })
+      }
+    },
+    insertField: (action, state, send) => {
+      const { instance, payload } = action
+      if (Object.keys(payload).length) {
+        const sql = queries.insertField(state.name, payload)
+        instance.raw(sql)
+        .then((results) => {
+          send('table:receiveNewField', { payload })
+        })
+      }
     }
   }
 }
