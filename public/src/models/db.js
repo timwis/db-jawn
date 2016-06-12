@@ -1,6 +1,6 @@
 const knex = require('knex')
 
-const queries = require('./queries')
+const queries = require('../queries')
 
 const model = {
   namespace: 'db',
@@ -13,41 +13,17 @@ const model = {
     },
     instance: null,
     tables: [],
-    fetchedTables: false,
-    selectedTable: {
-      name: '',
-      primaryKey: '',
-      fields: [],
-      rows: [],
-      selectedRowIndex: null
-    }
+    fetchedTables: false
   },
   reducers: {
     config: (action, state) => ({
       config: action.payload,
       instance: knex({ client: 'pg', connection: action.payload }), // stored in state because it creates connection pools
       tables: [],
-      fetchedTables: false,
-      selectedTable: model.state.selectedTable // reset to default
+      fetchedTables: false
     }),
     receiveTableList: (action, state) => {
       return { tables: action.payload, fetchedTables: true }
-    },
-    receiveTable: (action, state) => {
-      return { selectedTable: action.payload }
-    },
-    setSelectedRow: (action, state) => {
-      const update = {selectedRowIndex: action.index}
-      return { selectedTable: Object.assign({}, state.selectedTable, update) }
-    },
-    receiveRowUpdate: (action, state) => {
-      const newRows = state.selectedTable.rows.slice()
-      Object.assign(newRows[action.index], action.payload)
-      return { selectedTable: Object.assign({}, state.selectedTable, {rows: newRows}) }
-    },
-    receiveNewRow: (action, state) => {
-      const newRows = [ ...state.selectedTable.rows, action.payload ]
-      return { selectedTable: Object.assign({}, state.selectedTable, {rows: newRows}) }
     }
   },
   effects: {
@@ -56,52 +32,6 @@ const model = {
       .then((response) => {
         const tables = response.rows.map((table) => table.tablename)
         send('db:receiveTableList', { payload: tables })
-      })
-    },
-    getTable: (action, state, send) => {
-      const table = action.name
-      Promise.all([
-        state.instance(table).columnInfo(),
-        state.instance.raw(queries.getPrimaryKey(table)),
-        state.instance.raw(queries.getRows(table))
-      ])
-      .then((results) => {
-        const [fieldsResults, primaryKeyResults, rowsResults] = results
-        const payload = {
-          primaryKey: primaryKeyResults.rows.length > 0 && primaryKeyResults.rows[0].attname,
-          fields: [],
-          rows: rowsResults.rows,
-          name: table,
-          selectedRowIndex: null
-        }
-
-        // Map fields object to an array
-        for (let field in fieldsResults) {
-          fieldsResults[field].name = field
-          payload.fields.push(fieldsResults[field])
-        }
-
-        send('db:receiveTable', {payload})
-      })
-      .catch(() => console.error('error fetching table', arguments))
-    },
-    updateRow: (action, state, send) => {
-      const { table, index, payload } = action
-      if (Object.keys(payload).length) {
-        const primaryKey = state.selectedTable.primaryKey
-        const row = state.selectedTable.rows[index]
-        const conditions = {[primaryKey]: row[primaryKey]}
-        state.instance(table).where(conditions).update(payload)
-        .then((results) => {
-          if (results > 0) send('db:receiveRowUpdate', { table, index, payload })
-        })
-      }
-    },
-    insertRow: (action, state, send) => {
-      const { table, payload } = action
-      state.instance(table).insert(payload, '*')
-      .then((results) => {
-        if (results.length > 0) send('db:receiveNewRow', { table, payload: results[0] })
       })
     }
   }

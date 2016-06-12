@@ -2,8 +2,9 @@ const dataGrid = require('./data-grid')
 
 module.exports = (params, state, send) => {
   const table = params.name
-  if (table && state.db.instance && state.db.selectedTable.name !== params.name) {
-    send('db:getTable', { name: table })
+  const instance = state.db.instance
+  if (table && instance && state.table.name !== table) {
+    send('table:getTable', { instance, table })
   }
 
   const validTypes = ['integer', 'text', 'character varying']
@@ -17,10 +18,10 @@ module.exports = (params, state, send) => {
 
   return dataGrid({
     fields: columns,
-    rows: state.db.selectedTable.fields,
-    selectedRowIndex: state.db.selectedTable.selectedRowIndex,
-    onSelectRow: (index) => send('db:setSelectedRow', {index})
-    // onUpdateRow: (index, payload) => send('db:updateRow', {index, table, payload}),
-    // onInsertRow: (payload) => send('db:insertRow', {table, payload})
+    rows: state.table.fields,
+    selectedRowIndex: state.table.selectedRowIndex,
+    onSelectRow: (index) => send('table:setSelectedRow', {index})
+    // onUpdateRow: (index, payload) => send('table:updateRow', {index, table, payload}),
+    // onInsertRow: (payload) => send('table:insertRow', {table, payload})
   })
 }

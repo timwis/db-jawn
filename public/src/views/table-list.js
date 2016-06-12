@@ -11,7 +11,7 @@ module.exports = (params, state, send) => {
     </div>`
 
   function tableItem (name) {
-    const isActive = state.db.selectedTable.name === name
+    const isActive = state.table.name === name
     return choo.view`
       <a href="#tables/${name}" class="list-group-item ${isActive && 'active'}">
         ${name}
