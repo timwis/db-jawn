@@ -6,17 +6,11 @@ const {zipObject} = require('lodash')
  * - fields (Array of strings or array of objects with key/title properties, required)
  * - rows (Array of objects, required)
  */
-module.exports = (opts = {}) => {
-  const noop = () => {}
-  const {
-    fields,
-    rows,
-    selectedRowIndex,
-    onSelectRow = noop,
-    onUpdateRow = noop,
-    onInsertRow = noop } = opts
+const noop = () => {}
+
+module.exports = ({ fields, rows, selectedRowIndex, onSelectRow = noop,
+                    onUpdateRow = noop, onInsertRow = noop }) => {
   const newRowIndex = rows.length // (highest index plus one - a bit hacky)
-  const fieldKeys = fields.map((field) => field.key || field)
   const changesObserved = {} // stores any changes made to the selected row
 
   return view`
@@ -98,6 +92,7 @@ module.exports = (opts = {}) => {
         const isNewRow = index >= rows.length
         if (isRowValid(row)) {
           onSelectRow(null)
+          console.log(changesObserved)
           isNewRow ? onInsertRow(changesObserved) : onUpdateRow(index, changesObserved)
         } else {
           console.warn('Cannot save because of validation errors')
@@ -107,6 +102,7 @@ module.exports = (opts = {}) => {
 
   function getRowData (row) {
     const rowValues = Array.from(row.children).map((child) => child.innerText).slice(1) // first column is edit button
+    const fieldKeys = fields.map((field) => field.key || field)
     return zipObject(fieldKeys, rowValues)
   }
 
