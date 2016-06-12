@@ -92,7 +92,6 @@ module.exports = ({ fields, rows, selectedRowIndex, onSelectRow = noop,
         const isNewRow = index >= rows.length
         if (isRowValid(row)) {
           onSelectRow(null)
-          console.log(changesObserved)
           isNewRow ? onInsertRow(changesObserved) : onUpdateRow(index, changesObserved)
         } else {
           console.warn('Cannot save because of validation errors')
