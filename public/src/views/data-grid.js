@@ -37,17 +37,13 @@ module.exports = ({ fields, rows, selectedRowIndex, onSelectRow = noop,
     </table>`
 
   function editableRow (index, rowData = {}) {
-    // cache row element reference for use in oninput
-    const rowEl = view`
+    return view`
       <tr class="table-info">
         <td>${saveEditButton(index)}</td>
         ${fields.map((field) => view`
           <td contenteditable="${field.editable === false ? 'false' : 'true'}"
-            oninput=${(e) => onInput(e.target, field, rowEl)}>
-            ${rowData[field.key || field]}
-          </td>`)}
+            oninput=${(e) => onInput(e.target, field)}>${rowData[field.key || field]}</td>`)}
       </tr>`
-    return rowEl
   }
 
   function displayRow (index, rowData) {
@@ -69,9 +65,10 @@ module.exports = ({ fields, rows, selectedRowIndex, onSelectRow = noop,
       </tr>`
   }
 
-  function onInput (el, field, row) {
+  function onInput (el, field) {
     changesObserved[field.key || field] = el.innerText
     if (typeof field.validate === 'function') {
+      const row = el.closest('tr')
       const rowData = getRowData(row)
       const isValid = field.validate(el.innerText, rowData)
       el.classList.toggle('invalid', !isValid)
@@ -100,12 +97,16 @@ module.exports = ({ fields, rows, selectedRowIndex, onSelectRow = noop,
   }
 
   function getRowData (row) {
-    const rowValues = Array.from(row.children).map((child) => child.innerText).slice(1) // first column is edit button
+    const rowValues = Array.from(row.children).slice(1).map((child) => child.innerText) // first column is edit button
     const fieldKeys = fields.map((field) => field.key || field)
     return zipObject(fieldKeys, rowValues)
   }
 
+  // Confirm every field is valid. Can't just check for .invalid classes because
+  // user may not have typed anything in a field at all, which wouldn't have run validation
   function isRowValid (row) {
-    return Array.from(row.children).slice(1).every((child) => !child.classList.contains('invalid'))
+    const rowData = getRowData(row)
+    return fields.filter((field) => typeof field.validate === 'function')
+      .every((field) => field.validate(rowData[field.key || field], rowData))
   }
 }
