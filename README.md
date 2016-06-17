@@ -12,7 +12,9 @@ and MySQL, maybe more). It won't be as fully-featured as some of the other tools
 but it will provide the simple stuff simply.
 
 ## Technology
-Dataface is a JavaScript application using the [choo](https://github.com/yoshuawuyts/choo/)
+Dataface is a JavaScript application using the 
+[:steam_locomotive::train::train::train::train::train:](https://github.com/yoshuawuyts/choo/)
+[choo](https://github.com/yoshuawuyts/choo/)
 framework. It's almost entirely client-side, but since it needs to access databases, it's
 built as a cross-platform desktop application using [electron](http://electron.atom.io/).
 
