@@ -14,27 +14,29 @@ module.exports = ({ fields, rows, selectedRowIndex, onSelectRow = noop,
   const changesObserved = {} // stores any changes made to the selected row
 
   return view`
-    <table class="table table-bordered table-hover table-sm">
+    <div class="data-grid">
+      <table class="table table-bordered table-hover table-sm">
 
-      ${fields.length ? view`
-        <thead>
-          <tr>
-            <th></th>
-            ${fields.map((field) => view`<th>${field.title || field.key || field}</th>`)}
-          </tr>
-        </thead>` : ''}
+        ${fields.length ? view`
+          <thead>
+            <tr>
+              <th></th>
+              ${fields.map((field) => view`<th>${field.title || field.key || field}</th>`)}
+            </tr>
+          </thead>` : ''}
 
-      ${rows.length ? view`
-        <tbody>
-          ${rows.map((row, index) => selectedRowIndex === index
-            ? editableRow(index, row)
-            : displayRow(index, row))}
-          ${selectedRowIndex === newRowIndex
-            ? editableRow(newRowIndex)
-            : blankRow(newRowIndex)}
-        </tbody>` : ''}
+        ${rows.length ? view`
+          <tbody>
+            ${rows.map((row, index) => selectedRowIndex === index
+              ? editableRow(index, row)
+              : displayRow(index, row))}
+            ${selectedRowIndex === newRowIndex
+              ? editableRow(newRowIndex)
+              : blankRow(newRowIndex)}
+          </tbody>` : ''}
 
-    </table>`
+      </table>
+    </div>`
 
   function editableRow (index, rowData = {}) {
     return view`
