@@ -31,7 +31,8 @@ module.exports = (params, state, send) => {
     },
     {
       key: 'defaultValue',
-      title: 'Default'
+      title: 'Default',
+      validate: (value, row) => value.length > 0 || row.nullable !== 'false'
     }
   ]
 

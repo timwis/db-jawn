@@ -18,9 +18,16 @@ module.exports = {
     SELECT *
     FROM ${table}`,
 
-  insertField: (table, payload) => `
-    ALTER TABLE ${table}
-    ADD COLUMN ${payload.name} ${payload.type} ${(payload.maxLength ? `(${payload.maxLength})` : '')}`,
+  insertField: (table, payload) => {
+    const sql = [`
+      ALTER TABLE ${table}
+      ADD COLUMN ${payload.name} ${payload.type}`
+    ]
+    if (payload.maxLength) sql.push(`(${payload.maxLength})`)
+    if (payload.nullable === 'false') sql.push(`NOT NULL`)
+    if (payload.defaultValue) sql.push(`DEFAULT '${payload.defaultValue}'`)
+    return sql.join(' ')
+  },
 
   updateField: (table, column, changes) => {
     const sql = [
