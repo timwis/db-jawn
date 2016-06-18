@@ -99,8 +99,11 @@ module.exports = {
       if (Object.keys(payload).length) {
         const sql = queries.insertField(state.name, payload)
         instance.raw(sql)
-        .then((results) => {
-          send('table:receiveNewField', { payload })
+        .then((results) => instance(state.name).columnInfo())
+        .then((fieldsResults) => {
+          const newField = fieldsResults[payload.name] || {}
+          newField.name = payload.name // not included by default in knex field object
+          send('table:receiveNewField', { payload: newField })
         })
       }
     }
