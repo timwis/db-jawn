@@ -1,4 +1,5 @@
 const html = require('choo').view
+const notie = require('notie')
 
 module.exports = (params, state, send) => {
   if (state.db.instance && !state.db.fetchedTables) {
@@ -19,7 +20,7 @@ module.exports = (params, state, send) => {
         <span class="pull-xs-right">
           <a href="#tables/${name}/schema"><i class="fa fa-pencil"></i></a>
           <a href="#" onclick=${(e) => {
-            send('db:deleteTable', {index})
+            notie.confirm(`Delete table ${name}?`, 'Yes, delete', 'Cancel', () => send('db:deleteTable', {index}))
             e.preventDefault()
           }}><i class="fa fa-trash"></i></a>
         </span>
