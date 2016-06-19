@@ -32,6 +32,13 @@ const model = {
     },
     setCreatingTable: (action, state) => {
       return { isCreatingTable: action.value }
+    },
+    receiveTableDeletion: (action, state) => {
+      const newTables = [
+        ...state.tables.slice(0, action.index),
+        ...state.tables.slice(action.index + 1)
+      ]
+      return { tables: newTables }
     }
   },
   effects: {
@@ -47,8 +54,15 @@ const model = {
       const name = action.name
       state.instance.schema.createTable(name, noop)
       .then((response) => {
-        console.log('created', response)
-        send('db:receiveNewTable', { name })
+        send('db:receiveNewTable', {name})
+      })
+    },
+    deleteTable: (action, state, send) => {
+      const index = action.index
+      const name = state.tables[index]
+      state.instance.schema.dropTable(name)
+      .then((response) => {
+        send('db:receiveTableDeletion', {index})
       })
     }
   }

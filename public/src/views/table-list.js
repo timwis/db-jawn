@@ -11,13 +11,17 @@ module.exports = (params, state, send) => {
       ${addTableItem()}
     </div>`
 
-  function tableItem (name) {
+  function tableItem (name, index) {
     const isActive = state.table.name === name
     return html`
       <a href="#tables/${name}" class="list-group-item ${isActive && 'active'}">
         ${name}
         <span class="pull-xs-right">
-          <a href="#tables/${name}/schema"><i class="fa fa-edit"></i></a>
+          <a href="#tables/${name}/schema"><i class="fa fa-pencil"></i></a>
+          <a href="#" onclick=${(e) => {
+            send('db:deleteTable', {index})
+            e.preventDefault()
+          }}><i class="fa fa-trash"></i></a>
         </span>
       </a>`
   }
