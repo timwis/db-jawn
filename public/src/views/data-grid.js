@@ -29,15 +29,16 @@ module.exports = ({ fields, rows, selectedRowIndex,
             </tr>
           </thead>` : ''}
 
-        ${rows.length ? html`
           <tbody>
-            ${rows.map((row, index) => selectedRowIndex === index
-              ? editableRow(index, row)
-              : displayRow(index, row))}
-            ${selectedRowIndex === newRowIndex
-              ? editableRow(newRowIndex)
-              : blankRow(newRowIndex)}
-          </tbody>` : ''}
+            ${rows.length ? html`
+              ${rows.map((row, index) => selectedRowIndex === index
+                ? editableRow(index, row)
+                : displayRow(index, row))}` : ''}
+            ${fields.length ? html`
+              ${selectedRowIndex === newRowIndex
+                ? editableRow(newRowIndex)
+                : blankRow(newRowIndex)}` : ''}
+          </tbody>
 
       </table>
     </div>`

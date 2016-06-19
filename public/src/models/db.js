@@ -13,7 +13,8 @@ const model = {
     },
     instance: null,
     tables: [],
-    fetchedTables: false
+    fetchedTables: false,
+    isCreatingTable: false
   },
   reducers: {
     config: (action, state) => ({
@@ -24,6 +25,13 @@ const model = {
     }),
     receiveTableList: (action, state) => {
       return { tables: action.payload, fetchedTables: true }
+    },
+    receiveNewTable: (action, state) => {
+      const newTables = [...state.tables, action.name]
+      return { tables: newTables }
+    },
+    setCreatingTable: (action, state) => {
+      return { isCreatingTable: action.value }
     }
   },
   effects: {
@@ -32,6 +40,15 @@ const model = {
       .then((response) => {
         const tables = response.rows.map((table) => table.tablename)
         send('db:receiveTableList', { payload: tables })
+      })
+    },
+    createTable: (action, state, send) => {
+      const noop = () => {}
+      const name = action.name
+      state.instance.schema.createTable(name, noop)
+      .then((response) => {
+        console.log('created', response)
+        send('db:receiveNewTable', { name })
       })
     }
   }
