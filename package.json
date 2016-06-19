@@ -8,7 +8,7 @@
     "watch": "watchify public/src/index.js -o public/dist/bundle.js -d",
     "server": "cd public && lite-server && cd -",
     "start:browser": "npm run watch & npm run server",
-    "test": "node public/test"
+    "test": "tape public/test/**/*.js | tap-spec"
   },
   "keywords": [],
   "author": "timwis <tim@timwis.com>",
