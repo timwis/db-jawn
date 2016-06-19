@@ -21,6 +21,13 @@ module.exports = {
       Object.assign(newRows[action.index], action.payload)
       return { rows: newRows }
     },
+    receiveRowDeletion: (action, state) => {
+      const newRows = [
+        ...state.rows.slice(0, action.index),
+        ...state.rows.slice(action.index + 1)
+      ]
+      return { rows: newRows }
+    },
     receiveNewRow: (action, state) => {
       const newRows = [ ...state.rows, action.payload ]
       return { rows: newRows }
@@ -32,6 +39,13 @@ module.exports = {
     },
     receiveNewField: (action, state) => {
       const newFields = [ ...state.fields, action.payload ]
+      return { fields: newFields }
+    },
+    receiveFieldDeletion: (action, state) => {
+      const newFields = [
+        ...state.fields.slice(0, action.index),
+        ...state.fields.slice(action.index + 1)
+      ]
       return { fields: newFields }
     }
   },
@@ -83,6 +97,16 @@ module.exports = {
         })
       }
     },
+    deleteRow: (action, state, send) => {
+      const { instance, index } = action
+      const primaryKey = state.primaryKey
+      const row = state.rows[index]
+      const conditions = {[primaryKey]: row[primaryKey]}
+      instance(state.name).where(conditions).del()
+      .then((deletedCount) => {
+        if (deletedCount > 0) send('table:receiveRowDeletion', {index})
+      })
+    },
     updateField: (action, state, send) => {
       const { instance, index, payload } = action
       if (Object.keys(payload).length) {
@@ -106,6 +130,16 @@ module.exports = {
           send('table:receiveNewField', { payload: newField })
         })
       }
+    },
+    deleteField: (action, state, send) => {
+      const { instance, index } = action
+      const field = state.fields[index]
+      instance.schema.table(state.name, (table) => {
+        table.dropColumn(field.name)
+      })
+      .then((results) => {
+        send('table:receiveFieldDeletion', {index})
+      })
     }
   }
 }

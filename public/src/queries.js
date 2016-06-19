@@ -43,5 +43,9 @@ module.exports = {
     if (changes.nullable == 'false') sql.push(`ALTER COLUMN ${column} DROP NOT NULL`)
 
     return sql.join('\n')
-  }
+  },
+
+  deleteField: (table, column) => `
+    ALTER TABLE ${table}
+    DROP COLUMN ${column}`
 }

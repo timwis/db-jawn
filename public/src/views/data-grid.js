@@ -7,12 +7,13 @@ const noop = () => {}
  * @param {Object[]|string[]} fields Field names as strings or field objects
  * @param {Object[]} rows Row objects containing each field as a property
  * @param {number} selectedRowIndex Index of selected (currently editing) row in rows array
- * @callback onSelectRow Function to execute when user selects a row (index)
- * @callback onUpdateRow Function to execute when a row is updated by the user (index, payload)
- * @callback onInsertRow Function to execute when a new row is saved by the user (payload)
+ * @callback [onSelectRow] Function to execute when user selects a row (index)
+ * @callback [onUpdateRow] Function to execute when a row is updated by the user (index, payload)
+ * @callback [onInsertRow] Function to execute when a new row is saved by the user (payload)
+ * @callback [onDeleteRow] Function to execute when user deletes a row (index)
  */
 module.exports = ({ fields, rows, selectedRowIndex,
-                    onSelectRow = noop, onUpdateRow = noop, onInsertRow = noop }) => {
+                    onSelectRow = noop, onUpdateRow = noop, onInsertRow = noop, onDeleteRow = noop }) => {
   const newRowIndex = rows.length // (highest index plus one - a bit hacky)
   const changesObserved = {} // stores any changes made to the selected row
 
@@ -23,7 +24,7 @@ module.exports = ({ fields, rows, selectedRowIndex,
         ${fields.length ? html`
           <thead>
             <tr>
-              <th></th>
+              <th colspan="2"></th>
               ${fields.map((field) => html`<th>${field.title || field.key || field}</th>`)}
             </tr>
           </thead>` : ''}
@@ -45,6 +46,7 @@ module.exports = ({ fields, rows, selectedRowIndex,
     return html`
       <tr class="table-info">
         <td>${saveEditButton(index)}</td>
+        <td>${deleteButton(index)}</td>
         ${fields.map((field) => html`
           <td contenteditable="${field.editable === false ? 'false' : 'true'}"
             oninput=${(e) => onInput(e.target, field)}>${rowData[field.key || field]}</td>`)}
@@ -55,6 +57,7 @@ module.exports = ({ fields, rows, selectedRowIndex,
     return html`
       <tr>
         <td>${editButton(index)}</td>
+        <td>${deleteButton(index)}</td>
         ${fields.map((field) => html`
           <td>${rowData[field.key || field]}</td>`)}
       </tr>`
@@ -63,7 +66,7 @@ module.exports = ({ fields, rows, selectedRowIndex,
   function blankRow (index) {
     return html`
       <tr>
-        <td colspan="${fields.length + 1}"
+        <td colspan="${fields.length + 2}"
           onclick=${(e) => onSelectRow(index)}>
           Click to add a new row
         </td>
@@ -82,7 +85,7 @@ module.exports = ({ fields, rows, selectedRowIndex,
 
   function editButton (index) {
     return html`
-      <i class="fa fa-edit" onclick=${(e) => {
+      <i class="fa fa-pencil" onclick=${(e) => {
         onSelectRow(index)
       }}></i>`
   }
@@ -101,8 +104,15 @@ module.exports = ({ fields, rows, selectedRowIndex,
       }}></i>`
   }
 
+  function deleteButton (index) {
+    return html`
+      <i class="fa fa-trash" onclick=${(e) => {
+        onDeleteRow(index)
+      }}`
+  }
+
   function getRowData (row) {
-    const rowValues = Array.from(row.children).slice(1).map((child) => child.innerText) // first column is edit button
+    const rowValues = Array.from(row.children).slice(2).map((child) => child.innerText) // first 2 columns are controls
     const fieldKeys = fields.map((field) => field.key || field)
     return zipObject(fieldKeys, rowValues)
   }

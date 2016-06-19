@@ -18,6 +18,7 @@ module.exports = (params, state, send) => {
     selectedRowIndex,
     onSelectRow: (index) => send('table:setSelectedRow', {index}),
     onUpdateRow: (index, payload) => send('table:updateRow', {instance, index, payload}),
-    onInsertRow: (payload) => send('table:insertRow', {instance, payload})
+    onInsertRow: (payload) => send('table:insertRow', {instance, payload}),
+    onDeleteRow: (index) => send('table:deleteRow', {instance, index})
   })
 }
