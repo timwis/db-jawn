@@ -1,31 +1,34 @@
-const view = require('choo').view
+const html = require('choo').view
 const {zipObject} = require('lodash')
-/**
- * Data Grid
- * Options:
- * - fields (Array of strings or array of objects with key/title properties, required)
- * - rows (Array of objects, required)
- */
 const noop = () => {}
 
-module.exports = ({ fields, rows, selectedRowIndex, onSelectRow = noop,
-                    onUpdateRow = noop, onInsertRow = noop }) => {
+/**
+ * Create an editable data grid component
+ * @param {Object[]|string[]} fields Field names as strings or field objects
+ * @param {Object[]} rows Row objects containing each field as a property
+ * @param {number} selectedRowIndex Index of selected (currently editing) row in rows array
+ * @callback onSelectRow Function to execute when user selects a row (index)
+ * @callback onUpdateRow Function to execute when a row is updated by the user (index, payload)
+ * @callback onInsertRow Function to execute when a new row is saved by the user (payload)
+ */
+module.exports = ({ fields, rows, selectedRowIndex,
+                    onSelectRow = noop, onUpdateRow = noop, onInsertRow = noop }) => {
   const newRowIndex = rows.length // (highest index plus one - a bit hacky)
   const changesObserved = {} // stores any changes made to the selected row
 
-  return view`
+  return html`
     <div class="data-grid">
       <table class="table table-bordered table-hover table-sm">
 
-        ${fields.length ? view`
+        ${fields.length ? html`
           <thead>
             <tr>
               <th></th>
-              ${fields.map((field) => view`<th>${field.title || field.key || field}</th>`)}
+              ${fields.map((field) => html`<th>${field.title || field.key || field}</th>`)}
             </tr>
           </thead>` : ''}
 
-        ${rows.length ? view`
+        ${rows.length ? html`
           <tbody>
             ${rows.map((row, index) => selectedRowIndex === index
               ? editableRow(index, row)
@@ -39,26 +42,26 @@ module.exports = ({ fields, rows, selectedRowIndex, onSelectRow = noop,
     </div>`
 
   function editableRow (index, rowData = {}) {
-    return view`
+    return html`
       <tr class="table-info">
         <td>${saveEditButton(index)}</td>
-        ${fields.map((field) => view`
+        ${fields.map((field) => html`
           <td contenteditable="${field.editable === false ? 'false' : 'true'}"
             oninput=${(e) => onInput(e.target, field)}>${rowData[field.key || field]}</td>`)}
       </tr>`
   }
 
   function displayRow (index, rowData) {
-    return view`
+    return html`
       <tr>
         <td>${editButton(index)}</td>
-        ${fields.map((field) => view`
+        ${fields.map((field) => html`
           <td>${rowData[field.key || field]}</td>`)}
       </tr>`
   }
 
   function blankRow (index) {
-    return view`
+    return html`
       <tr>
         <td colspan="${fields.length + 1}"
           onclick=${(e) => onSelectRow(index)}>
@@ -78,14 +81,14 @@ module.exports = ({ fields, rows, selectedRowIndex, onSelectRow = noop,
   }
 
   function editButton (index) {
-    return view`
+    return html`
       <i class="fa fa-edit" onclick=${(e) => {
         onSelectRow(index)
       }}></i>`
   }
 
   function saveEditButton (index) {
-    return view`
+    return html`
       <i class="fa fa-save" onclick=${(e) => {
         const row = e.target.closest('tr')
         const isNewRow = index >= rows.length
