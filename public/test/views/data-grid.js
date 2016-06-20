@@ -1,7 +1,7 @@
 const test = require('tape')
 require('jsdom-global')()
 
-const dataGrid = require('../../src/views/data-grid')
+const dataGrid = require('../../src/components/data-grid')
 
 test('data grid: displays rows and blank row', (t) => {
   t.plan(2)

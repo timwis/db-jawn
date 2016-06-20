@@ -1,4 +1,4 @@
-const dataGrid = require('./data-grid')
+const dataGrid = require('../components/data-grid')
 
 module.exports = (params, state, send) => {
   const table = params.name
