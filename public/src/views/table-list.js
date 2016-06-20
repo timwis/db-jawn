@@ -2,7 +2,7 @@ const html = require('choo').view
 const notie = require('notie')
 
 module.exports = (params, state, send) => {
-  if (state.db.instance && !state.db.fetchedTables) {
+  if (state.db.connection && !state.db.fetchedTables) {
     send('db:getTableList')
   }
 

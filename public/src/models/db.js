@@ -11,7 +11,7 @@ const model = {
       password: '',
       database: ''
     },
-    instance: null,
+    connection: null,
     tables: [],
     fetchedTables: false,
     isCreatingTable: false
@@ -19,7 +19,7 @@ const model = {
   reducers: {
     config: (action, state) => ({
       config: action.payload,
-      instance: knex({ client: 'pg', connection: action.payload }), // stored in state because it creates connection pools
+      connection: knex({ client: 'pg', connection: action.payload }), // stored in state because it creates connection pools
       tables: [],
       fetchedTables: false
     }),
@@ -43,16 +43,15 @@ const model = {
   },
   effects: {
     getTableList: (action, state, send) => {
-      state.instance.raw(queries.getTables())
+      queries.getTables(state.connection)
       .then((response) => {
         const tables = response.rows.map((table) => table.tablename)
         send('db:receiveTableList', { payload: tables })
       })
     },
     createTable: (action, state, send) => {
-      const noop = () => {}
       const name = action.name
-      state.instance.schema.createTable(name, noop)
+      queries.createTable(state.connection, name)
       .then((response) => {
         send('db:receiveNewTable', {name})
       })
@@ -60,7 +59,7 @@ const model = {
     deleteTable: (action, state, send) => {
       const index = action.index
       const name = state.tables[index]
-      state.instance.schema.dropTable(name)
+      queries.deleteTable(state.connection, name)
       .then((response) => {
         send('db:receiveTableDeletion', {index})
       })
@@ -72,7 +71,7 @@ const model = {
 if (process.env.NODE_ENV === 'development') {
   const initialCredentials = require('../config')
   model.state.config = initialCredentials
-  model.state.instance = knex({ client: 'pg', connection: initialCredentials })
+  model.state.connection = knex({ client: 'pg', connection: initialCredentials })
 }
 
 module.exports = model

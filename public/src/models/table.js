@@ -51,11 +51,11 @@ module.exports = {
   },
   effects: {
     getTable: (action, state, send) => {
-      const { instance, table } = action
+      const { connection, table } = action
       Promise.all([
-        instance(table).columnInfo(),
-        instance.raw(queries.getPrimaryKey(table)),
-        instance.select().from(table)
+        queries.getSchema(connection, table),
+        queries.getPrimaryKey(connection, table),
+        queries.getRows(connection, table)
       ])
       .then((results) => {
         const [fieldsResults, primaryKeyResults, rows] = results
@@ -77,53 +77,51 @@ module.exports = {
       .then((payload) => send('table:receiveTable', {payload}))
     },
     updateRow: (action, state, send) => {
-      const { instance, index, payload } = action
+      const { connection, index, payload } = action
       if (Object.keys(payload).length) {
         const primaryKey = state.primaryKey
         const row = state.rows[index]
         const conditions = {[primaryKey]: row[primaryKey]}
-        instance(state.name).where(conditions).update(payload)
+        queries.updateRow(connection, state.name, payload, conditions)
         .then((results) => {
           if (results > 0) send('table:receiveRowUpdate', { index, payload })
         })
       }
     },
     insertRow: (action, state, send) => {
-      const { instance, payload } = action
+      const { connection, payload } = action
       if (Object.keys(payload).length) {
-        instance(state.name).insert(payload, '*')
+        queries.insertRow(connection, state.name, payload)
         .then((results) => {
           if (results.length > 0) send('table:receiveNewRow', { payload: results[0] })
         })
       }
     },
     deleteRow: (action, state, send) => {
-      const { instance, index } = action
+      const { connection, index } = action
       const primaryKey = state.primaryKey
       const row = state.rows[index]
       const conditions = {[primaryKey]: row[primaryKey]}
-      instance(state.name).where(conditions).del()
+      queries.deleteRow(connection, state.name, conditions)
       .then((deletedCount) => {
         if (deletedCount > 0) send('table:receiveRowDeletion', {index})
       })
     },
     updateField: (action, state, send) => {
-      const { instance, index, payload } = action
+      const { connection, index, payload } = action
       if (Object.keys(payload).length) {
         const column = state.fields[index].name
-        const sql = queries.updateField(state.name, column, payload)
-        instance.raw(sql)
+        queries.updateField(connection, state.name, column, payload)
         .then((results) => {
           send('table:receiveFieldUpdate', { index, payload })
         })
       }
     },
     insertField: (action, state, send) => {
-      const { instance, payload } = action
+      const { connection, payload } = action
       if (Object.keys(payload).length) {
-        const sql = queries.insertField(state.name, payload)
-        instance.raw(sql)
-        .then((results) => instance(state.name).columnInfo())
+        queries.insertField(connection, state.name, payload)
+        .then((results) => queries.getSchema(connection, state.name))
         .then((fieldsResults) => {
           const newField = fieldsResults[payload.name] || {}
           newField.name = payload.name // not included by default in knex field object
@@ -132,11 +130,9 @@ module.exports = {
       }
     },
     deleteField: (action, state, send) => {
-      const { instance, index } = action
+      const { connection, index } = action
       const field = state.fields[index]
-      instance.schema.table(state.name, (table) => {
-        table.dropColumn(field.name)
-      })
+      queries.deleteField(connection, state.name, field.name)
       .then((results) => {
         send('table:receiveFieldDeletion', {index})
       })
