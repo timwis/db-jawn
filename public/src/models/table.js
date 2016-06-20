@@ -55,14 +55,14 @@ module.exports = {
       Promise.all([
         instance(table).columnInfo(),
         instance.raw(queries.getPrimaryKey(table)),
-        instance.raw(queries.getRows(table))
+        instance.select().from(table)
       ])
       .then((results) => {
-        const [fieldsResults, primaryKeyResults, rowsResults] = results
+        const [fieldsResults, primaryKeyResults, rows] = results
         const payload = {
           primaryKey: primaryKeyResults.rows.length > 0 && primaryKeyResults.rows[0].attname,
           fields: [],
-          rows: rowsResults.rows,
+          rows,
           name: table,
           selectedRowIndex: null
         }

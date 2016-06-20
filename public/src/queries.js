@@ -14,10 +14,6 @@ module.exports = {
     WHERE i.indrelid = '${table}'::regclass
       AND i.indisprimary`,
 
-  getRows: (table) => `
-    SELECT *
-    FROM ${table}`,
-
   insertField: (table, payload) => {
     const sql = [`
       ALTER TABLE ${table}
