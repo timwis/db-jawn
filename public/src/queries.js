@@ -29,7 +29,7 @@ module.exports = {
       .then((results) => results.rows.length > 0 ? results.rows[0].attname : null)
   },
 
-  insertField: (instance, table, payload) => {
+  insertColumn: (instance, table, payload) => {
     const sql = [`
       ALTER TABLE ${table}
       ADD COLUMN ${payload.name} ${payload.type}`
@@ -40,7 +40,7 @@ module.exports = {
     return instance.raw(sql.join(' '))
   },
 
-  updateField: (instance, table, column, changes) => {
+  updateColumn: (instance, table, column, changes) => {
     const sql = [
       `ALTER TABLE ${table}`
     ]
@@ -56,7 +56,7 @@ module.exports = {
     return instance.raw(sql.join('\n'))
   },
 
-  deleteField: (instance, table, column) => {
+  deleteColumn: (instance, table, column) => {
     return instance.schema.table(table, (t) => {
       t.dropColumn(column)
     })

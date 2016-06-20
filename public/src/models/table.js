@@ -5,7 +5,7 @@ module.exports = {
   state: {
     name: '',
     primaryKey: '',
-    fields: [],
+    columns: [],
     rows: [],
     selectedRowIndex: null
   },
@@ -32,21 +32,21 @@ module.exports = {
       const newRows = [ ...state.rows, action.payload ]
       return { rows: newRows }
     },
-    receiveFieldUpdate: (action, state) => {
-      const newFields = state.fields.slice()
-      Object.assign(newFields[action.index], action.payload)
-      return { fields: newFields }
+    receiveColumnUpdate: (action, state) => {
+      const newColumns = state.columns.slice()
+      Object.assign(newColumns[action.index], action.payload)
+      return { columns: newColumns }
     },
-    receiveNewField: (action, state) => {
-      const newFields = [ ...state.fields, action.payload ]
-      return { fields: newFields }
+    receiveNewColumn: (action, state) => {
+      const newColumns = [ ...state.columns, action.payload ]
+      return { columns: newColumns }
     },
-    receiveFieldDeletion: (action, state) => {
-      const newFields = [
-        ...state.fields.slice(0, action.index),
-        ...state.fields.slice(action.index + 1)
+    receiveColumnDeletion: (action, state) => {
+      const newColumns = [
+        ...state.columns.slice(0, action.index),
+        ...state.columns.slice(action.index + 1)
       ]
-      return { fields: newFields }
+      return { columns: newColumns }
     }
   },
   effects: {
@@ -58,19 +58,19 @@ module.exports = {
         queries.getRows(connection, table)
       ])
       .then((results) => {
-        const [fieldsResults, primaryKey, rows] = results
+        const [columnsResults, primaryKey, rows] = results
         const payload = {
           primaryKey,
-          fields: [],
+          columns: [],
           rows,
           name: table,
           selectedRowIndex: null
         }
 
-        // Map fields object to an array
-        for (let field in fieldsResults) {
-          fieldsResults[field].name = field
-          payload.fields.push(fieldsResults[field])
+        // Map columns object to an array
+        for (let column in columnsResults) {
+          columnsResults[column].name = column
+          payload.columns.push(columnsResults[column])
         }
         return payload
       })
@@ -119,34 +119,34 @@ module.exports = {
         if (deletedCount > 0) send('table:receiveRowDeletion', {index})
       })
     },
-    updateField: (action, state, send) => {
+    updateColumn: (action, state, send) => {
       const { connection, index, payload } = action
       if (Object.keys(payload).length) {
-        const column = state.fields[index].name
-        queries.updateField(connection, state.name, column, payload)
+        const column = state.columns[index].name
+        queries.updateColumn(connection, state.name, column, payload)
         .then((results) => {
-          send('table:receiveFieldUpdate', { index, payload })
+          send('table:receiveColumnUpdate', { index, payload })
         })
       }
     },
-    insertField: (action, state, send) => {
+    insertColumn: (action, state, send) => {
       const { connection, payload } = action
       if (Object.keys(payload).length) {
-        queries.insertField(connection, state.name, payload)
+        queries.insertColumn(connection, state.name, payload)
         .then((results) => queries.getSchema(connection, state.name))
-        .then((fieldsResults) => {
-          const newField = fieldsResults[payload.name] || {}
-          newField.name = payload.name // not included by default in knex field object
-          send('table:receiveNewField', { payload: newField })
+        .then((columnsResults) => {
+          const newColumn = columnsResults[payload.name] || {}
+          newColumn.name = payload.name // not included by default in knex column object
+          send('table:receiveNewColumn', { payload: newColumn })
         })
       }
     },
-    deleteField: (action, state, send) => {
+    deleteColumn: (action, state, send) => {
       const { connection, index } = action
-      const field = state.fields[index]
-      queries.deleteField(connection, state.name, field.name)
+      const column = state.columns[index]
+      queries.deleteColumn(connection, state.name, column.name)
       .then((results) => {
-        send('table:receiveFieldDeletion', {index})
+        send('table:receiveColumnDeletion', {index})
       })
     }
   }

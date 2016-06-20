@@ -4,15 +4,15 @@ const noop = () => {}
 
 /**
  * Create an editable data grid component
- * @param {Object[]|string[]} fields Field names as strings or field objects
- * @param {Object[]} rows Row objects containing each field as a property
+ * @param {Object[]|string[]} columns Column names as strings or column objects
+ * @param {Object[]} rows Row objects containing each column as a property
  * @param {number} selectedRowIndex Index of selected (currently editing) row in rows array
  * @callback [onSelectRow] Function to execute when user selects a row (index)
  * @callback [onUpdateRow] Function to execute when a row is updated by the user (index, payload)
  * @callback [onInsertRow] Function to execute when a new row is saved by the user (payload)
  * @callback [onDeleteRow] Function to execute when user deletes a row (index)
  */
-module.exports = ({ fields, rows, selectedRowIndex,
+module.exports = ({ columns, rows, selectedRowIndex,
                     onSelectRow = noop, onUpdateRow = noop, onInsertRow = noop, onDeleteRow = noop }) => {
   const newRowIndex = rows.length // (highest index plus one - a bit hacky)
   const changesObserved = {} // stores any changes made to the selected row
@@ -21,11 +21,11 @@ module.exports = ({ fields, rows, selectedRowIndex,
     <div class="data-grid">
       <table class="table table-bordered table-hover table-sm">
 
-        ${fields.length ? html`
+        ${columns.length ? html`
           <thead>
             <tr>
               <th colspan="2"></th>
-              ${fields.map((field) => html`<th>${field.title || field.key || field}</th>`)}
+              ${columns.map((column) => html`<th>${column.title || column.key || column}</th>`)}
             </tr>
           </thead>` : ''}
 
@@ -34,7 +34,7 @@ module.exports = ({ fields, rows, selectedRowIndex,
               ${rows.map((row, index) => selectedRowIndex === index
                 ? editableRow(index, row)
                 : displayRow(index, row))}` : ''}
-            ${fields.length ? html`
+            ${columns.length ? html`
               ${selectedRowIndex === newRowIndex
                 ? editableRow(newRowIndex)
                 : blankRow(newRowIndex)}` : ''}
@@ -48,9 +48,9 @@ module.exports = ({ fields, rows, selectedRowIndex,
       <tr class="table-info">
         <td>${saveEditButton(index)}</td>
         <td>${deleteButton(index)}</td>
-        ${fields.map((field) => html`
-          <td contenteditable="${field.editable === false ? 'false' : 'true'}"
-            oninput=${(e) => onInput(e.target, field)}>${rowData[field.key || field]}</td>`)}
+        ${columns.map((column) => html`
+          <td contenteditable="${column.editable === false ? 'false' : 'true'}"
+            oninput=${(e) => onInput(e.target, column)}>${rowData[column.key || column]}</td>`)}
       </tr>`
   }
 
@@ -59,27 +59,27 @@ module.exports = ({ fields, rows, selectedRowIndex,
       <tr>
         <td>${editButton(index)}</td>
         <td>${deleteButton(index)}</td>
-        ${fields.map((field) => html`
-          <td>${rowData[field.key || field]}</td>`)}
+        ${columns.map((column) => html`
+          <td>${rowData[column.key || column]}</td>`)}
       </tr>`
   }
 
   function blankRow (index) {
     return html`
       <tr>
-        <td colspan="${fields.length + 2}"
+        <td colspan="${columns.length + 2}"
           onclick=${(e) => onSelectRow(index)}>
           Click to add a new row
         </td>
       </tr>`
   }
 
-  function onInput (el, field) {
-    changesObserved[field.key || field] = el.innerText
-    if (typeof field.validate === 'function') {
+  function onInput (el, column) {
+    changesObserved[column.key || column] = el.innerText
+    if (typeof column.validate === 'function') {
       const row = el.closest('tr')
       const rowData = getRowData(row)
-      const isValid = field.validate(el.innerText, rowData)
+      const isValid = column.validate(el.innerText, rowData)
       el.classList.toggle('invalid', !isValid)
     }
   }
@@ -114,15 +114,15 @@ module.exports = ({ fields, rows, selectedRowIndex,
 
   function getRowData (row) {
     const rowValues = Array.from(row.children).slice(2).map((child) => child.innerText) // first 2 columns are controls
-    const fieldKeys = fields.map((field) => field.key || field)
-    return zipObject(fieldKeys, rowValues)
+    const columnKeys = columns.map((column) => column.key || column)
+    return zipObject(columnKeys, rowValues)
   }
 
-  // Confirm every field is valid. Can't just check for .invalid classes because
-  // user may not have typed anything in a field at all, which wouldn't have run validation
+  // Confirm every column is valid. Can't just check for .invalid classes because
+  // user may not have typed anything in a column at all, which wouldn't have run validation
   function isRowValid (row) {
     const rowData = getRowData(row)
-    return fields.filter((field) => typeof field.validate === 'function')
-      .every((field) => field.validate(rowData[field.key || field], rowData))
+    return columns.filter((column) => typeof column.validate === 'function')
+      .every((column) => column.validate(rowData[column.key || column], rowData))
   }
 }

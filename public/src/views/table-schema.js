@@ -37,12 +37,12 @@ module.exports = (params, state, send) => {
   ]
 
   return dataGrid({
-    fields: columns,
-    rows: state.table.fields,
+    columns: columns,
+    rows: state.table.columns,
     selectedRowIndex: state.table.selectedRowIndex,
     onSelectRow: (index) => send('table:setSelectedRow', {index}),
-    onUpdateRow: (index, payload) => send('table:updateField', {connection, index, payload}),
-    onInsertRow: (payload) => send('table:insertField', {connection, payload}),
-    onDeleteRow: (index) => send('table:deleteField', {connection, index})
+    onUpdateRow: (index, payload) => send('table:updateColumn', {connection, index, payload}),
+    onInsertRow: (payload) => send('table:insertColumn', {connection, payload}),
+    onDeleteRow: (index) => send('table:deleteColumn', {connection, index})
   })
 }

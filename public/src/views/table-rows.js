@@ -1,5 +1,3 @@
-// const choo = require('choo')
-
 const dataGrid = require('./data-grid')
 
 module.exports = (params, state, send) => {
@@ -9,11 +7,11 @@ module.exports = (params, state, send) => {
     send('table:getTable', { connection, table })
   }
 
-  const { fields, rows, primaryKey, selectedRowIndex } = state.table
-  const fieldsObject = fields.map((field) => ({ key: field.name, editable: (field.name !== primaryKey) }))
+  const { columns, rows, primaryKey, selectedRowIndex } = state.table
+  const columnsObject = columns.map((column) => ({ key: column.name, editable: (column.name !== primaryKey) }))
 
   return dataGrid({
-    fields: fieldsObject,
+    columns: columnsObject,
     rows,
     selectedRowIndex,
     onSelectRow: (index) => send('table:setSelectedRow', {index}),
