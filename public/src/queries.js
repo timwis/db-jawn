@@ -67,7 +67,7 @@ module.exports = {
   },
 
   updateRow: (connection, table, payload, conditions) => {
-    return connection(table).where(conditions).update(payload)
+    return connection(table).where(conditions).update(payload).limit(1)
   },
 
   insertRow: (connection, table, payload) => {

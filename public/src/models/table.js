@@ -79,9 +79,15 @@ module.exports = {
     updateRow: (action, state, send) => {
       const { connection, index, payload } = action
       if (Object.keys(payload).length) {
-        const primaryKey = state.primaryKey
         const row = state.rows[index]
-        const conditions = {[primaryKey]: row[primaryKey]}
+        const primaryKey = state.primaryKey
+
+        // If primary key exists, use it as the condition;
+        // otherwise, use every value of row
+        const conditions = primaryKey
+          ? {[primaryKey]: row[primaryKey]}
+          : row
+
         queries.updateRow(connection, state.name, payload, conditions)
         .then((results) => {
           if (results > 0) send('table:receiveRowUpdate', { index, payload })
@@ -99,9 +105,15 @@ module.exports = {
     },
     deleteRow: (action, state, send) => {
       const { connection, index } = action
-      const primaryKey = state.primaryKey
       const row = state.rows[index]
-      const conditions = {[primaryKey]: row[primaryKey]}
+      const primaryKey = state.primaryKey
+
+      // If primary key exists, use it as the condition;
+      // otherwise, use every value of row
+      const conditions = primaryKey
+        ? {[primaryKey]: row[primaryKey]}
+        : row
+
       queries.deleteRow(connection, state.name, conditions)
       .then((deletedCount) => {
         if (deletedCount > 0) send('table:receiveRowDeletion', {index})
