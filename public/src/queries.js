@@ -29,35 +29,59 @@ module.exports = {
       .then((results) => results.rows.length > 0 ? results.rows[0].attname : null)
   },
 
-  insertColumn: (instance, table, payload) => {
+  insertColumn: (connection, table, payload) => {
+    const bindings = Object.assign({}, payload, {table})
     const sql = [`
-      ALTER TABLE ${table}
-      ADD COLUMN ${payload.name} ${payload.type}`
+      ALTER TABLE :table:
+      ADD COLUMN :name: ${payload.type}`
     ]
-    if (payload.maxLength) sql.push(`(${payload.maxLength})`)
-    if (payload.nullable === 'false') sql.push(`NOT NULL`)
-    if (payload.defaultValue) sql.push(`DEFAULT '${payload.defaultValue}'`)
-    return instance.raw(sql.join(' '))
+    if (payload.maxLength) sql.push(`(${+payload.maxLength})`)
+    if (payload.nullable === 'false') sql.push('NOT NULL')
+    if (payload.defaultValue) sql.push('DEFAULT :defaultValue')
+    return connection.raw(sql.join(' '), bindings)
   },
 
-  updateColumn: (instance, table, column, changes) => {
-    const sql = [
-      `ALTER TABLE ${table}`
-    ]
-    if (changes.name) sql.push(`RENAME COLUMN ${column} TO ${changes.name}`)
-    if (changes.type) sql.push(`ALTER COLUMN ${column} TYPE ${changes.type}` + (changes.maxLength ? ` (${changes.maxLength})` : ''))
-    if (changes.defaultValue !== undefined) {
-      if (changes.defaultValue === '') sql.push(`ALTER COLUMN ${column} DROP DEFAULT`)
-      else sql.push(`ALTER COLUMN ${column} SET DEFAULT ${changes.defaultValue}`)
+  updateColumn: (connection, table, column, changes) => {
+    let promise
+    const bindings = Object.assign({}, changes, { table, column })
+
+    if (changes.type || changes.defaultValue !== undefined || changes.nullable) {
+      const alterations = []
+
+      if (changes.type) {
+        alterations.push(`ALTER COLUMN :column: TYPE ${changes.type} ${changes.maxLength ? `(${changes.maxLength})` : ''}`)
+      }
+
+      if (changes.defaultValue !== undefined) {
+        if (changes.defaultValue === '') alterations.push('ALTER COLUMN :column: DROP DEFAULT')
+        else alterations.push('ALTER COLUMN :column: SET DEFAULT :defaultValue')
+      }
+
+      if (changes.nullable === 'false') {
+        alterations.push('ALTER COLUMN :column: SET NOT NULL')
+      } else if (changes.nullable === 'true') {
+        alterations.push('ALTER COLUMN :column: DROP NOT NULL')
+      }
+
+      const sql = 'ALTER TABLE :table: ' + alterations.join(', ')
+      // defaultValue doesn't seem to work as a binding, so this is a hacky workaround
+      promise = connection.raw(connection.raw(sql, bindings).toString())
     }
-    if (changes.nullable == 'true') sql.push(`ALTER COLUMN ${column} SET NOT NULL`)
-    if (changes.nullable == 'false') sql.push(`ALTER COLUMN ${column} DROP NOT NULL`)
 
-    return instance.raw(sql.join('\n'))
+    // Column renaming should be run *after* alterations because alterations use original name
+    if (changes.name) {
+      const sql = 'ALTER TABLE :table: RENAME COLUMN :column: to :name:'
+      const query = connection.raw(sql, bindings)
+      // If promise already set by alterations, run this after. Otherwise its the only promise.
+      if (promise) promise.then(() => query)
+      else promise = query
+    }
+
+    return promise
   },
 
-  deleteColumn: (instance, table, column) => {
-    return instance.schema.table(table, (t) => {
+  deleteColumn: (connection, table, column) => {
+    return connection.schema.table(table, (t) => {
       t.dropColumn(column)
     })
   },
