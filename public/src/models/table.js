@@ -58,9 +58,9 @@ module.exports = {
         queries.getRows(connection, table)
       ])
       .then((results) => {
-        const [fieldsResults, primaryKeyResults, rows] = results
+        const [fieldsResults, primaryKey, rows] = results
         const payload = {
-          primaryKey: primaryKeyResults.rows.length > 0 && primaryKeyResults.rows[0].attname,
+          primaryKey,
           fields: [],
           rows,
           name: table,

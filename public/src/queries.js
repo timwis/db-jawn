@@ -17,14 +17,17 @@ module.exports = {
     return connection(table).columnInfo()
   },
 
-  getPrimaryKey: (connection, table) => connection.raw(`
-    SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type
-    FROM pg_index i
-    JOIN pg_attribute a
-      ON a.attrelid = i.indrelid
-      AND a.attnum = ANY(i.indkey)
-    WHERE i.indrelid = ?::regclass
-      AND i.indisprimary`, table),
+  getPrimaryKey: (connection, table) => {
+    return connection.raw(`
+      SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type
+      FROM pg_index i
+      JOIN pg_attribute a
+        ON a.attrelid = i.indrelid
+        AND a.attnum = ANY(i.indkey)
+      WHERE i.indrelid = ?::regclass
+        AND i.indisprimary`, table)
+      .then((results) => results.rows.length > 0 ? results.rows[0].attname : null)
+  },
 
   insertField: (instance, table, payload) => {
     const sql = [`
