@@ -45,7 +45,7 @@ module.exports = ({ columns, rows, selectedRowIndex,
 
   function editableRow (index, rowData = {}) {
     return html`
-      <tr class="table-info">
+      <tr class="table-info selected">
         <td class="edit-button">${saveEditButton(index)}</td>
         <td class="delete-button">${deleteButton(index)}</td>
         ${columns.map((column) => html`
