@@ -4,7 +4,7 @@ require('jsdom-global')()
 const dataGrid = require('../../src/views/data-grid')
 
 test('data grid: displays rows and blank row', (t) => {
-  t.plan(1)
+  t.plan(2)
   const fields = ['firstName', 'lastName']
   const rows = [
     { firstName: 'George', lastName: 'Washington' },
@@ -15,5 +15,11 @@ test('data grid: displays rows and blank row', (t) => {
     fields,
     rows
   })
-  t.equal(tree.querySelector('tbody').children.length, rows.length + 1) // blank row at end
+  // +1 to account for blank row at end
+  const tableRows = tree.querySelector('tbody').children
+  t.equal(tableRows.length, rows.length + 1, 'display all rows')
+
+  const columnCount = fields.length + 2
+  const blankRowColumn = tree.querySelector('tbody tr:last-child td')
+  t.equal(+blankRowColumn.getAttribute('colspan'), columnCount, 'last row spans all columns')
 })
