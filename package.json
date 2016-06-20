@@ -7,7 +7,8 @@
     "start": "electron .",
     "watch": "watchify public/src/index.js -o public/dist/bundle.js -d",
     "server": "cd public && lite-server && cd -",
-    "start:browser": "npm run watch & npm run server"
+    "start:browser": "npm run watch & npm run server",
+    "test": "tape public/test/**/*.js | tap-spec"
   },
   "keywords": [],
   "author": "timwis <tim@timwis.com>",
@@ -25,7 +26,11 @@
   "devDependencies": {
     "browserify": "^13.0.1",
     "electron-prebuilt": "^1.1.1",
+    "jsdom": "^9.2.1",
+    "jsdom-global": "^2.0.0",
     "lite-server": "^2.2.0",
+    "tap-spec": "^4.1.1",
+    "tape": "^4.5.1",
     "watchify": "^3.7.0"
   }
 }
