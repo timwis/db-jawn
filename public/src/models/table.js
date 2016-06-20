@@ -123,8 +123,14 @@ module.exports = {
       const { connection, index, payload } = action
       if (Object.keys(payload).length) {
         const column = state.columns[index].name
-        queries.updateColumn(connection, state.name, column, payload)
-        .then((results) => {
+        const query = queries.updateColumn(connection, state.name, column, payload)
+
+        // Column renaming should be run *after* alterations because alterations use original name
+        if (payload.name) {
+          query.then(() => queries.renameColumn(connection, state.name, column, payload.name))
+        }
+
+        query.then((results) => {
           send('table:receiveColumnUpdate', { index, payload })
         })
       }
