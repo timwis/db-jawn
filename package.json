@@ -31,7 +31,6 @@
     "lite-server": "^2.2.0",
     "tap-spec": "^4.1.1",
     "tape": "^4.5.1",
-    "tape-run": "^2.1.4",
     "watchify": "^3.7.0"
   }
 }
