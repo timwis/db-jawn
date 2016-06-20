@@ -46,8 +46,8 @@ module.exports = ({ columns, rows, selectedRowIndex,
   function editableRow (index, rowData = {}) {
     return html`
       <tr class="table-info">
-        <td>${saveEditButton(index)}</td>
-        <td>${deleteButton(index)}</td>
+        <td class="edit-button">${saveEditButton(index)}</td>
+        <td class="delete-button">${deleteButton(index)}</td>
         ${columns.map((column) => html`
           <td contenteditable="${column.editable === false ? 'false' : 'true'}"
             oninput=${(e) => onInput(e.target, column)}>${rowData[column.key || column]}</td>`)}
@@ -57,8 +57,8 @@ module.exports = ({ columns, rows, selectedRowIndex,
   function displayRow (index, rowData) {
     return html`
       <tr>
-        <td>${editButton(index)}</td>
-        <td>${deleteButton(index)}</td>
+        <td class="edit-button">${editButton(index)}</td>
+        <td class="delete-button">${deleteButton(index)}</td>
         ${columns.map((column) => html`
           <td>${rowData[column.key || column]}</td>`)}
       </tr>`
@@ -108,7 +108,8 @@ module.exports = ({ columns, rows, selectedRowIndex,
   function deleteButton (index) {
     return html`
       <i class="fa fa-trash" onclick=${(e) => {
-        onDeleteRow(index)
+        const isNewRow = index >= rows.length
+        isNewRow ? onSelectRow(null) : onDeleteRow(index)
       }}`
   }
 

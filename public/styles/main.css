@@ -5,3 +5,7 @@
 .invalid {
   background-color: #f2dede !important;
 }
+
+.edit-button, .delete-button {
+  width: 23px;
+}
