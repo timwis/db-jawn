@@ -6,10 +6,11 @@ const model = {
   namespace: 'db',
   state: {
     config: {
-      hostname: '',
-      username: '',
+      host: '',
+      user: '',
       password: '',
-      database: ''
+      database: '',
+      ssl: false
     },
     connection: null,
     tables: [],

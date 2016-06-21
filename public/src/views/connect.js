@@ -15,13 +15,13 @@ module.exports = (params, state, send) => {
       <h1>Connect</h1>
       <form onsubmit=${onSubmit}>
         <fieldset class="form-group">
-          <label for="hostname">Hostname</label>
-          <input value="${config.hostname}" id="hostname" placeholder="localhost" class="form-control">
+          <label for="host">Host</label>
+          <input value="${config.host}" id="host" placeholder="localhost" class="form-control">
         </fieldset>
 
         <fieldset class="form-group">
-          <label for="username">Username</label>
-          <input value="${config.username}" id="username" placeholder="root" class="form-control">
+          <label for="user">User</label>
+          <input value="${config.user}" id="user" placeholder="root" class="form-control">
         </fieldset>
 
         <fieldset class="form-group">
@@ -33,6 +33,12 @@ module.exports = (params, state, send) => {
           <label for="database">Database name</label>
           <input value="${config.database}" id="database" placeholder="my_db" class="form-control">
         </fieldset>
+
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" id="ssl" checked="${config.ssl}"> Use SSL
+          </label>
+        </div>
 
         <button type="submit" class="btn btn-primary">Save</button>
       </form>
