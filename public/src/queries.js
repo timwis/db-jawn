@@ -83,8 +83,13 @@ module.exports = {
     })
   },
 
-  getRows: (connection, table) => {
-    return connection.select().from(table)
+  getRows: (connection, table, limit, offset) => {
+    return connection.select().from(table).limit(limit).offset(offset)
+  },
+
+  getRowCount: (connection, table) => {
+    return connection.count().from(table)
+      .then((results) => results.length > 0 ? results[0].count : null)
   },
 
   updateRow: (connection, table, payload, conditions) => {
@@ -96,6 +101,6 @@ module.exports = {
   },
 
   deleteRow: (connection, table, conditions) => {
-    return connection(table).where(conditions).del()
+    return connection(table).where(conditions).del().limit(1)
   }
 }

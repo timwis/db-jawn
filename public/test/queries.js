@@ -52,6 +52,13 @@ test('queries: rename column', (t) => {
   t.equal(query.toString(), trimQuery(expected), 'query matches')
 })
 
+test('queries: pagination', (t) => {
+  t.plan(1)
+  const query = queries.getRows(knex, 'users', 10, 20)
+  const expected = 'select * from "users" limit \'10\' offset \'20\''
+  t.equal(query.toString(), expected, 'includes limit and offset when provided')
+})
+
 function trimQuery (sql) {
   return sql.trim().replace(/ +(?= )/g, '').replace(/\n/g, '')
 }

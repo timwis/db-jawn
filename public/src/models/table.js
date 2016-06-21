@@ -7,11 +7,20 @@ module.exports = {
     primaryKey: '',
     columns: [],
     rows: [],
-    selectedRowIndex: null
+    selectedRowIndex: null,
+    rowCount: 0,
+    limit: 50,
+    offset: 0
   },
   reducers: {
     receiveTable: (action, state) => {
-      return action.payload
+      return Object.assign({}, action.payload, { selectedRowIndex: null, offset: 0 })
+    },
+    receiveRows: (action, state) => {
+      return { rows: action.rows }
+    },
+    setOffset: (action, state) => {
+      return { offset: action.newOffset }
     },
     setSelectedRow: (action, state) => {
       return { selectedRowIndex: action.index }
@@ -26,11 +35,11 @@ module.exports = {
         ...state.rows.slice(0, action.index),
         ...state.rows.slice(action.index + 1)
       ]
-      return { rows: newRows }
+      return { rows: newRows, rowCount: state.rowCount - 1 }
     },
     receiveNewRow: (action, state) => {
       const newRows = [ ...state.rows, action.payload ]
-      return { rows: newRows }
+      return { rows: newRows, rowCount: state.rowCount + 1 }
     },
     receiveColumnUpdate: (action, state) => {
       const newColumns = state.columns.slice()
@@ -55,16 +64,17 @@ module.exports = {
       Promise.all([
         queries.getSchema(connection, table),
         queries.getPrimaryKey(connection, table),
-        queries.getRows(connection, table)
+        queries.getRows(connection, table, state.limit, 0),
+        queries.getRowCount(connection, table)
       ])
       .then((results) => {
-        const [columnsResults, primaryKey, rows] = results
+        const [columnsResults, primaryKey, rows, rowCount] = results
         const payload = {
           primaryKey,
           columns: [],
           rows,
           name: table,
-          selectedRowIndex: null
+          rowCount: +rowCount
         }
 
         // Map columns object to an array
@@ -75,6 +85,14 @@ module.exports = {
         return payload
       })
       .then((payload) => send('table:receiveTable', {payload}))
+    },
+    paginate: (action, state, send) => {
+      const { connection, table, newOffset } = action
+      queries.getRows(connection, table, state.limit, newOffset)
+      .then((rows) => {
+        send('table:receiveRows', {rows})
+        send('table:setOffset', {newOffset})
+      })
     },
     updateRow: (action, state, send) => {
       const { connection, index, payload } = action

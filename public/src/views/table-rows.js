@@ -1,4 +1,7 @@
-const dataGrid = require('../components/data-grid')
+const html = require('choo').view
+
+const DataGrid = require('../components/data-grid')
+const Pagination = require('../components/pagination')
 
 module.exports = (params, state, send) => {
   const table = params.name
@@ -7,10 +10,10 @@ module.exports = (params, state, send) => {
     send('table:getTable', { connection, table })
   }
 
-  const { columns, rows, primaryKey, selectedRowIndex } = state.table
+  const { columns, rows, primaryKey, selectedRowIndex, offset, limit, rowCount } = state.table
   const columnsObject = columns.map((column) => ({ key: column.name, editable: (column.name !== primaryKey) }))
 
-  return dataGrid({
+  const dataGrid = DataGrid({
     columns: columnsObject,
     rows,
     selectedRowIndex,
@@ -19,4 +22,21 @@ module.exports = (params, state, send) => {
     onInsertRow: (payload) => send('table:insertRow', {connection, payload}),
     onDeleteRow: (index) => send('table:deleteRow', {connection, index})
   })
+
+  const pagination = Pagination({
+    offset,
+    limit,
+    total: rowCount,
+    onPaginate: (newOffset) => send('table:paginate', {connection, table, newOffset})
+  })
+
+  return html`
+    <div>
+      ${dataGrid}
+      <small>
+        Showing ${offset} - ${Math.min(rowCount, offset + limit)}
+        of ${rowCount} rows
+      </small>
+      ${pagination}
+    </div>`
 }
