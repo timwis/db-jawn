@@ -1,3 +1,5 @@
+const notie = require('notie')
+
 const dataGrid = require('../components/data-grid')
 
 module.exports = (params, state, send) => {
@@ -43,6 +45,9 @@ module.exports = (params, state, send) => {
     onSelectRow: (index) => send('table:setSelectedRow', {index}),
     onUpdateRow: (index, payload) => send('table:updateColumn', {connection, index, payload}),
     onInsertRow: (payload) => send('table:insertColumn', {connection, payload}),
-    onDeleteRow: (index) => send('table:deleteColumn', {connection, index})
+    onDeleteRow: (index) => {
+      const columnName = state.table.columns[index].name
+      notie.confirm(`Delete column ${columnName}?`, 'Yes, delete', 'Cancel', () => send('table:deleteColumn', {connection, index}))
+    }
   })
 }
