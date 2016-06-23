@@ -13,7 +13,8 @@ app.router((route) => [
   route('/', views.connect),
   route('/tables', views.databaseLayout(), [
     route('/:name', views.databaseLayout('rows'), [
-      route('/schema', views.databaseLayout('schema'))
+      route('/schema', views.databaseLayout('schema')),
+      route('/options', views.databaseLayout('options'))
     ])
   ])
 ])
