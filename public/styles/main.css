@@ -9,3 +9,7 @@
 .edit-button, .delete-button {
   width: 23px;
 }
+
+.database-table {
+  padding-top: 10px;
+}

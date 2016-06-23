@@ -13,17 +13,10 @@ module.exports = (params, state, send) => {
     </div>`
 
   function tableItem (name, index) {
-    const isActive = state.table.name === name
+    const isActive = params.name === name
     return html`
       <a href="#tables/${name}" class="list-group-item ${isActive && 'active'}">
         ${name}
-        <span class="pull-xs-right">
-          <a href="#tables/${name}/schema"><i class="fa fa-pencil"></i></a>
-          <a href="#" onclick=${(e) => {
-            notie.confirm(`Delete table ${name}?`, 'Yes, delete', 'Cancel', () => send('db:deleteTable', {index}))
-            e.preventDefault()
-          }}><i class="fa fa-trash"></i></a>
-        </span>
       </a>`
   }
 

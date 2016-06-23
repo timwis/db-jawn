@@ -58,8 +58,8 @@ const model = {
       })
     },
     deleteTable: (action, state, send) => {
-      const index = action.index
-      const name = state.tables[index]
+      const name = action.name
+      const index = state.tables.findIndex((table) => table === name)
       queries.deleteTable(state.connection, name)
       .then((response) => {
         send('db:receiveTableDeletion', {index})
