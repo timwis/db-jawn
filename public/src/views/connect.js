@@ -36,7 +36,7 @@ module.exports = (params, state, send) => {
 
         <div class="checkbox">
           <label>
-            <input type="checkbox" id="ssl" checked="${config.ssl}"> Use SSL
+            <input type="checkbox" id="ssl" checked="${config.ssl ? 'true' : 'false'}"> Use SSL
           </label>
         </div>
 
