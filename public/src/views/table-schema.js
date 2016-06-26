@@ -1,7 +1,7 @@
 const notie = require('notie')
 
 const dataGrid = require('../components/data-grid')
-const queries = require('../queries')
+const client = require('../clients/postgres')
 
 module.exports = (params, state, send) => {
   const table = params.name
@@ -19,7 +19,7 @@ module.exports = (params, state, send) => {
     {
       key: 'type',
       title: 'Type',
-      validate: (value, row) => queries.validTypes.includes(value)
+      validate: (value, row) => client.validTypes.includes(value)
     },
     {
       key: 'maxLength',

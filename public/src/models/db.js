@@ -1,6 +1,6 @@
 const knex = require('knex')
 
-const queries = require('../queries')
+const client = require('../clients/postgres')
 
 const model = {
   namespace: 'db',
@@ -44,7 +44,7 @@ const model = {
   },
   effects: {
     getTableList: (action, state, send) => {
-      queries.getTables(state.connection)
+      client.getTables(state.connection)
       .then((response) => {
         const tables = response.rows.map((table) => table.tablename)
         send('db:receiveTableList', { payload: tables })
@@ -52,7 +52,7 @@ const model = {
     },
     createTable: (action, state, send) => {
       const name = action.name
-      queries.createTable(state.connection, name)
+      client.createTable(state.connection, name)
       .then((response) => {
         send('db:receiveNewTable', {name})
       })
@@ -60,7 +60,7 @@ const model = {
     deleteTable: (action, state, send) => {
       const name = action.name
       const index = state.tables.findIndex((table) => table === name)
-      queries.deleteTable(state.connection, name)
+      client.deleteTable(state.connection, name)
       .then((response) => {
         send('db:receiveTableDeletion', {index})
       })

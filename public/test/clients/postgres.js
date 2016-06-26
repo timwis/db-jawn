@@ -1,16 +1,16 @@
 const test = require('tape')
 const knex = require('knex')({ client: 'pg' })
 
-const queries = require('../src/queries')
+const client = require('../../src/clients/postgres')
 
-test('queries: create table', (t) => {
+test('postgres: create table', (t) => {
   t.plan(1)
-  const query = queries.createTable(knex, 'users')
+  const query = client.createTable(knex, 'users')
   const expected = 'create table "users" ()'
   t.equal(query.toString(), expected)
 })
 
-test('queries: insert column', (t) => {
+test('postgres: insert column', (t) => {
   t.plan(1)
   const payload = {
     name: 'bio',
@@ -19,14 +19,14 @@ test('queries: insert column', (t) => {
     nullable: 'false',
     defaultValue: 'n/a'
   }
-  const query = queries.insertColumn(knex, 'users', payload)
+  const query = client.insertColumn(knex, 'users', payload)
   const expected = `
     ALTER TABLE "users"
     ADD COLUMN "bio" character varying (24) NOT NULL DEFAULT \'n/a\'`
   t.equal(trimQuery(query.toString()), trimQuery(expected), 'query matches')
 })
 
-test('queries: update column', (t) => {
+test('postgres: update column', (t) => {
   t.plan(1)
   const changes = {
     type: 'character varying',
@@ -34,7 +34,7 @@ test('queries: update column', (t) => {
     defaultValue: '',
     nullable: 'true'
   }
-  const query = queries.updateColumn(knex, 'users', 'bio', changes)
+  const query = client.updateColumn(knex, 'users', 'bio', changes)
   const expected = `
     ALTER TABLE "users"
     ALTER COLUMN "bio" TYPE character varying (24),
@@ -43,18 +43,18 @@ test('queries: update column', (t) => {
   t.equal(trimQuery(query.toString()), trimQuery(expected), 'query matches')
 })
 
-test('queries: rename column', (t) => {
+test('postgres: rename column', (t) => {
   t.plan(1)
-  const query = queries.renameColumn(knex, 'users', 'bio', 'biography')
+  const query = client.renameColumn(knex, 'users', 'bio', 'biography')
   const expected = `
     alter table "users"
     rename "bio" to "biography"`
   t.equal(query.toString(), trimQuery(expected), 'query matches')
 })
 
-test('queries: pagination', (t) => {
+test('postgres: pagination', (t) => {
   t.plan(1)
-  const query = queries.getRows(knex, 'users', 10, 20)
+  const query = client.getRows(knex, 'users', 10, 20)
   const expected = 'select * from "users" limit \'10\' offset \'20\''
   t.equal(query.toString(), expected, 'includes limit and offset when provided')
 })

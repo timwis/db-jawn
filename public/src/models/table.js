@@ -1,4 +1,4 @@
-const queries = require('../queries')
+const client = require('../clients/postgres')
 
 module.exports = {
   namespace: 'table',
@@ -62,10 +62,10 @@ module.exports = {
     getTable: (action, state, send) => {
       const { connection, table } = action
       Promise.all([
-        queries.getSchema(connection, table),
-        queries.getPrimaryKey(connection, table),
-        queries.getRows(connection, table, state.limit, 0),
-        queries.getRowCount(connection, table)
+        client.getSchema(connection, table),
+        client.getPrimaryKey(connection, table),
+        client.getRows(connection, table, state.limit, 0),
+        client.getRowCount(connection, table)
       ])
       .then((results) => {
         const [columnsResults, primaryKey, rows, rowCount] = results
@@ -88,7 +88,7 @@ module.exports = {
     },
     paginate: (action, state, send) => {
       const { connection, table, newOffset } = action
-      queries.getRows(connection, table, state.limit, newOffset)
+      client.getRows(connection, table, state.limit, newOffset)
       .then((rows) => {
         send('table:receiveRows', {rows})
         send('table:setOffset', {newOffset})
@@ -106,7 +106,7 @@ module.exports = {
           ? {[primaryKey]: row[primaryKey]}
           : row
 
-        queries.updateRow(connection, state.name, payload, conditions)
+        client.updateRow(connection, state.name, payload, conditions)
         .then((results) => {
           if (results > 0) send('table:receiveRowUpdate', { index, payload })
         })
@@ -115,7 +115,7 @@ module.exports = {
     insertRow: (action, state, send) => {
       const { connection, payload } = action
       if (Object.keys(payload).length) {
-        queries.insertRow(connection, state.name, payload)
+        client.insertRow(connection, state.name, payload)
         .then((results) => {
           if (results.length > 0) send('table:receiveNewRow', { payload: results[0] })
         })
@@ -132,7 +132,7 @@ module.exports = {
         ? {[primaryKey]: row[primaryKey]}
         : row
 
-      queries.deleteRow(connection, state.name, conditions)
+      client.deleteRow(connection, state.name, conditions)
       .then((deletedCount) => {
         if (deletedCount > 0) send('table:receiveRowDeletion', {index})
       })
@@ -141,11 +141,11 @@ module.exports = {
       const { connection, index, payload } = action
       if (Object.keys(payload).length) {
         const column = state.columns[index].name
-        const query = queries.updateColumn(connection, state.name, column, payload)
+        const query = client.updateColumn(connection, state.name, column, payload)
 
         // Column renaming should be run *after* alterations because alterations use original name
         if (payload.name) {
-          query.then(() => queries.renameColumn(connection, state.name, column, payload.name))
+          query.then(() => client.renameColumn(connection, state.name, column, payload.name))
         }
 
         query.then((results) => {
@@ -156,8 +156,8 @@ module.exports = {
     insertColumn: (action, state, send) => {
       const { connection, payload } = action
       if (Object.keys(payload).length) {
-        queries.insertColumn(connection, state.name, payload)
-        .then((results) => queries.getSchema(connection, state.name))
+        client.insertColumn(connection, state.name, payload)
+        .then((results) => client.getSchema(connection, state.name))
         .then((columnsResults) => {
           const newColumn = columnsResults[payload.name] || {}
           newColumn.name = payload.name // not included by default in knex column object
@@ -168,7 +168,7 @@ module.exports = {
     deleteColumn: (action, state, send) => {
       const { connection, index } = action
       const column = state.columns[index]
-      queries.deleteColumn(connection, state.name, column.name)
+      client.deleteColumn(connection, state.name, column.name)
       .then((results) => {
         send('table:receiveColumnDeletion', {index})
       })
