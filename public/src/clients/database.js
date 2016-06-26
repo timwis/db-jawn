@@ -9,7 +9,9 @@
 module.exports = {
   validTypes: [],
 
-  getTables: (connection) => {},
+  getTables: (connection) => {
+    throw new Error('getTables method not implemented')
+  },
 
   createTable: (connection, table) => {
     return connection.schema.createTable(table, () => {})
@@ -23,7 +25,9 @@ module.exports = {
     return connection(table).columnInfo()
   },
 
-  getPrimaryKey: (connection, table) => {},
+  getPrimaryKey: (connection, table) => {
+    throw new Error('getPrimaryKey method not implemented')
+  },
 
   insertColumn: (connection, table, payload) => {
     const bindings = Object.assign({}, payload, {table})
@@ -37,7 +41,9 @@ module.exports = {
     return connection.raw(sql.join(' '), bindings)
   },
 
-  updateColumn: (connection, table, column, changes) => {},
+  updateColumn: (connection, table, column, changes) => {
+    throw new Error('updateColumn method not implemented')
+  },
 
   renameColumn: (connection, table, column, newName) => {
     const query = connection.schema.table(table, (t) => {
