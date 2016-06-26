@@ -1,3 +1,8 @@
+/**
+ * Postgres database client
+ * Extends the base client, database.js to provide postgres-specific
+ * queries for certain methods. Inherits the rest.
+ */
 const database = require('./database')
 
 const postgres = {

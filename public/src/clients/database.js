@@ -1,3 +1,11 @@
+/**
+ * Generic database client
+ * Like a "base class" for database clients. Some methods will
+ * work across all clients (via Knex.js) and do not need to be
+ * extended. Some methods do not have Knex.js support and thus
+ * must be hard-coded for each client. Extend this class via:
+ * Object.assign(Object.create(parentClass), subClass)
+ */
 module.exports = {
   validTypes: [],
 
