@@ -7,6 +7,7 @@ const tableSchema = require('./table-schema')
 const tableOptions = require('./table-options')
 
 module.exports = (variant) => (params, state, send) => {
+  const table = params.name
   const tabItems = [
     { key: 'rows', label: 'Rows', href: `#tables/${params.name}` },
     { key: 'schema', label: 'Schema', href: `#tables/${params.name}/schema` },
@@ -23,17 +24,18 @@ module.exports = (variant) => (params, state, send) => {
     <div>
       <h2>${state.db.config.database}</h2>
       <div class="row">
-        <div class="col-md-3">
+        <div class="${table ? 'col-md-3' : 'col-md-12'}">
           ${tableList(params, state, send)}
         </div>
-        <div class="col-md-9">
-          <div class="database-tabs">
-            ${Tabs(tabItems, variant)}
-          </div>
-          <div class="database-table">
-            ${subView(params, state, send)}
-          </div>
-        </div>
+        ${table ? html`
+          <div class="col-md-9">
+            <div class="database-tabs">
+              ${Tabs(tabItems, variant)}
+            </div>
+            <div class="database-table">
+              ${subView(params, state, send)}
+            </div>
+          </div>` : ''}
       </div>
     </div>`
 }
