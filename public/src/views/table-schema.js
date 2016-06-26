@@ -1,6 +1,7 @@
 const notie = require('notie')
 
 const dataGrid = require('../components/data-grid')
+const queries = require('../queries')
 
 module.exports = (params, state, send) => {
   const table = params.name
@@ -9,7 +10,6 @@ module.exports = (params, state, send) => {
     send('table:getTable', { connection, table })
   }
 
-  const validTypes = ['integer', 'text', 'character varying']
   const columns = [
     {
       key: 'name',
@@ -19,7 +19,7 @@ module.exports = (params, state, send) => {
     {
       key: 'type',
       title: 'Type',
-      validate: (value, row) => validTypes.includes(value)
+      validate: (value, row) => queries.validTypes.includes(value)
     },
     {
       key: 'maxLength',
