@@ -5,10 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "watch": "watchify public/src/index.js -o public/dist/bundle.js -d",
-    "server": "cd public && lite-server && cd -",
-    "start:browser": "npm run watch & npm run server",
-    "test": "tape public/test/*.js public/test/**/*.js | tap-spec"
+    "test": "tape public/test/*.js public/test/**/*.js | tap-spec",
+    "build": "electron-packager ./ --out=bin --platform=darwin --arch=x64"
   },
   "keywords": [],
   "author": "timwis <tim@timwis.com>",
@@ -25,6 +23,7 @@
   },
   "devDependencies": {
     "browserify": "^13.0.1",
+    "electron-packager": "^7.1.0",
     "electron-prebuilt": "^1.1.1",
     "jsdom": "^9.2.1",
     "jsdom-global": "^2.0.0",
