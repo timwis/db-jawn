@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "test": "tape public/test/*.js public/test/**/*.js | tap-spec",
-    "build": "electron-packager ./ --out=bin --platform=darwin --arch=x64"
+    "build": "electron-packager ./ --out=bin --all"
   },
   "keywords": [],
   "author": "timwis <tim@timwis.com>",
