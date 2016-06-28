@@ -1,11 +1,11 @@
 const test = require('tape')
-const knex = require('knex')({ client: 'pg' })
 
-const client = require('../../src/clients/postgres')
+const Client = require('../../src/clients/postgres')
+const client = new Client()
 
 test('postgres: create table', (t) => {
   t.plan(1)
-  const query = client.createTable(knex, 'users')
+  const query = client.createTable('users')
   const expected = 'create table "users" ()'
   t.equal(query.toString(), expected)
 })
@@ -19,7 +19,7 @@ test('postgres: insert column', (t) => {
     nullable: 'false',
     defaultValue: 'n/a'
   }
-  const query = client.insertColumn(knex, 'users', payload)
+  const query = client.insertColumn('users', payload)
   const expected = `
     ALTER TABLE "users"
     ADD COLUMN "bio" character varying (24) NOT NULL DEFAULT \'n/a\'`
@@ -34,7 +34,7 @@ test('postgres: update column', (t) => {
     defaultValue: '',
     nullable: 'true'
   }
-  const query = client.updateColumn(knex, 'users', 'bio', changes)
+  const query = client.updateColumn('users', 'bio', changes)
   const expected = `
     ALTER TABLE "users"
     ALTER COLUMN "bio" TYPE character varying (24),
@@ -45,7 +45,7 @@ test('postgres: update column', (t) => {
 
 test('postgres: rename column', (t) => {
   t.plan(1)
-  const query = client.renameColumn(knex, 'users', 'bio', 'biography')
+  const query = client.renameColumn('users', 'bio', 'biography')
   const expected = `
     alter table "users"
     rename "bio" to "biography"`
@@ -54,7 +54,7 @@ test('postgres: rename column', (t) => {
 
 test('postgres: pagination', (t) => {
   t.plan(1)
-  const query = client.getRows(knex, 'users', 10, 20)
+  const query = client.getRows('users', 10, 20)
   const expected = 'select * from "users" limit \'10\' offset \'20\''
   t.equal(query.toString(), expected, 'includes limit and offset when provided')
 })

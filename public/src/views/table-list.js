@@ -1,7 +1,7 @@
 const html = require('choo').view
 
 module.exports = (params, state, send) => {
-  if (state.db.connection && !state.db.fetchedTables) {
+  if (state.db.client && !state.db.fetchedTables) {
     send('db:getTableList')
   }
 

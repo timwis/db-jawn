@@ -6,9 +6,9 @@ const Pagination = require('../components/pagination')
 
 module.exports = (params, state, send) => {
   const table = params.name
-  const connection = state.db.connection
-  if (table && connection && state.table.name !== table) {
-    send('table:getTable', { connection, table })
+  const client = state.db.client
+  if (table && client && state.table.name !== table) {
+    send('table:getTable', { client, table })
   }
 
   const { columns, rows, primaryKey, selectedRowIndex, offset, limit, rowCount } = state.table
@@ -19,10 +19,10 @@ module.exports = (params, state, send) => {
     rows,
     selectedRowIndex,
     onSelectRow: (index) => send('table:setSelectedRow', {index}),
-    onUpdateRow: (index, payload) => send('table:updateRow', {connection, index, payload}),
-    onInsertRow: (payload) => send('table:insertRow', {connection, payload}),
+    onUpdateRow: (index, payload) => send('table:updateRow', {client, index, payload}),
+    onInsertRow: (payload) => send('table:insertRow', {client, payload}),
     onDeleteRow: (index) => {
-      notie.confirm('Delete this row?', 'Yes, delete', 'Cancel', () => send('table:deleteRow', {connection, index}))
+      notie.confirm('Delete this row?', 'Yes, delete', 'Cancel', () => send('table:deleteRow', {client, index}))
     }
   })
 
@@ -30,7 +30,7 @@ module.exports = (params, state, send) => {
     offset,
     limit,
     total: rowCount,
-    onPaginate: (newOffset) => send('table:paginate', {connection, table, newOffset})
+    onPaginate: (newOffset) => send('table:paginate', {client, table, newOffset})
   })
 
   return html`
