@@ -3,33 +3,40 @@
  * Like a "base class" for database clients. Some methods will
  * work across all clients (via Knex.js) and do not need to be
  * extended. Some methods do not have Knex.js support and thus
- * must be hard-coded for each client. Extend this class via:
- * Object.assign(Object.create(parentClass), subClass)
+ * must be hard-coded for each client.
  */
-module.exports = {
-  validTypes: [],
+const knex = require('knex')
 
-  getTables: (connection) => {
+module.exports = class Databse {
+  constructor () {
+    this.connection = knex({})
+  }
+
+  getValidTypes () {
+    throw new Error('getValidTypes method not implemented')
+  }
+
+  getTables () {
     throw new Error('getTables method not implemented')
-  },
+  }
 
-  createTable: (connection, table) => {
-    return connection.schema.createTable(table, () => {})
-  },
+  createTable (table) {
+    return this.connection.schema.createTable(table, () => {})
+  }
 
-  deleteTable: (connection, table) => {
-    return connection.schema.dropTable(table)
-  },
+  deleteTable (table) {
+    return this.connection.schema.dropTable(table)
+  }
 
-  getSchema: (connection, table) => {
-    return connection(table).columnInfo()
-  },
+  getSchema (table) {
+    return this.connection(table).columnInfo()
+  }
 
-  getPrimaryKey: (connection, table) => {
+  getPrimaryKey (table) {
     throw new Error('getPrimaryKey method not implemented')
-  },
+  }
 
-  insertColumn: (connection, table, payload) => {
+  insertColumn (table, payload) {
     const bindings = Object.assign({}, payload, {table})
     const sql = [`
       ALTER TABLE :table:
@@ -38,45 +45,45 @@ module.exports = {
     if (payload.maxLength) sql.push(`(${+payload.maxLength})`)
     if (payload.nullable === 'false') sql.push('NOT NULL')
     if (payload.defaultValue) sql.push('DEFAULT :defaultValue')
-  },
     // defaultValue doesn't seem to work as a binding, so this is a hacky workaround
     return this.connection.raw(this.connection.raw(sql.join(' '), bindings).toString())
+  }
 
-  updateColumn: (connection, table, column, changes) => {
+  updateColumn (table, column, changes) {
     throw new Error('updateColumn method not implemented')
-  },
+  }
 
-  renameColumn: (connection, table, column, newName) => {
-    const query = connection.schema.table(table, (t) => {
+  renameColumn (table, column, newName) {
+    const query = this.connection.schema.table(table, (t) => {
       t.renameColumn(column, newName)
     })
     return query
-  },
+  }
 
-  deleteColumn: (connection, table, column) => {
-    return connection.schema.table(table, (t) => {
+  deleteColumn (table, column) {
+    return this.connection.schema.table(table, (t) => {
       t.dropColumn(column)
     })
-  },
+  }
 
-  getRows: (connection, table, limit, offset) => {
-    return connection.select().from(table).limit(limit).offset(offset)
-  },
+  getRows (table, limit, offset) {
+    return this.connection.select().from(table).limit(limit).offset(offset)
+  }
 
-  getRowCount: (connection, table) => {
-    return connection.count().from(table)
+  getRowCount (table) {
+    return this.connection.count().from(table)
       .then((results) => results.length > 0 ? results[0].count : null)
-  },
+  }
 
-  updateRow: (connection, table, payload, conditions) => {
-    return connection(table).where(conditions).update(payload).limit(1)
-  },
+  updateRow (table, payload, conditions) {
+    return this.connection(table).where(conditions).update(payload).limit(1)
+  }
 
-  insertRow: (connection, table, payload) => {
-    return connection(table).insert(payload, '*')
-  },
+  insertRow (table, payload) {
+    return this.connection(table).insert(payload, '*')
+  }
 
-  deleteRow: (connection, table, conditions) => {
-    return connection(table).where(conditions).del().limit(1)
+  deleteRow (table, conditions) {
+    return this.connection(table).where(conditions).del().limit(1)
   }
 }

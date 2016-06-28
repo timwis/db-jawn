@@ -1,6 +1,6 @@
 const knex = require('knex')
 
-const client = require('../clients/postgres')
+const Postgres = require('../clients/postgres')
 
 const model = {
   namespace: 'db',
@@ -12,7 +12,7 @@ const model = {
       database: '',
       ssl: false
     },
-    connection: null,
+    client: null,
     tables: [],
     fetchedTables: false,
     isCreatingTable: false
@@ -20,7 +20,7 @@ const model = {
   reducers: {
     config: (action, state) => ({
       config: action.payload,
-      connection: knex({ client: 'pg', connection: action.payload }), // stored in state because it creates connection pools
+      client: new Postgres(action.payload), // stored in state because knex.js creates connection pools
       tables: [],
       fetchedTables: false
     }),
@@ -44,7 +44,7 @@ const model = {
   },
   effects: {
     getTableList: (action, state, send) => {
-      client.getTables(state.connection)
+      state.client.getTables()
       .then((response) => {
         const tables = response.rows.map((table) => table.tablename)
         send('db:receiveTableList', { payload: tables })
@@ -52,7 +52,7 @@ const model = {
     },
     createTable: (action, state, send) => {
       const name = action.name
-      client.createTable(state.connection, name)
+      state.client.createTable(name)
       .then((response) => {
         send('db:receiveNewTable', {name})
       })
@@ -60,7 +60,7 @@ const model = {
     deleteTable: (action, state, send) => {
       const name = action.name
       const index = state.tables.findIndex((table) => table === name)
-      client.deleteTable(state.connection, name)
+      state.client.deleteTable(name)
       .then((response) => {
         send('db:receiveTableDeletion', {index})
       })
@@ -72,7 +72,7 @@ const model = {
 if (process.env.NODE_ENV === 'development') {
   const initialCredentials = require('../config')
   model.state.config = initialCredentials
-  model.state.connection = knex({ client: 'pg', connection: initialCredentials })
+  model.state.client = new Postgres(initialCredentials)
 }
 
 module.exports = model

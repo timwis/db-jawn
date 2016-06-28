@@ -1,14 +1,15 @@
 const notie = require('notie')
 
 const dataGrid = require('../components/data-grid')
-const client = require('../clients/postgres')
 
 module.exports = (params, state, send) => {
   const table = params.name
-  const connection = state.db.connection
-  if (table && connection && state.table.name !== table) {
-    send('table:getTable', { connection, table })
+  const client = state.db.client
+  if (table && client && state.table.name !== table) {
+    send('table:getTable', { client, table })
   }
+
+  const validTypes = client.getValidTypes()
 
   const columns = [
     {
@@ -19,7 +20,7 @@ module.exports = (params, state, send) => {
     {
       key: 'type',
       title: 'Type',
-      validate: (value, row) => client.validTypes.includes(value)
+      validate: (value, row) => validTypes.includes(value)
     },
     {
       key: 'maxLength',
@@ -43,11 +44,11 @@ module.exports = (params, state, send) => {
     rows: state.table.columns,
     selectedRowIndex: state.table.selectedRowIndex,
     onSelectRow: (index) => send('table:setSelectedRow', {index}),
-    onUpdateRow: (index, payload) => send('table:updateColumn', {connection, index, payload}),
-    onInsertRow: (payload) => send('table:insertColumn', {connection, payload}),
+    onUpdateRow: (index, payload) => send('table:updateColumn', {client, index, payload}),
+    onInsertRow: (payload) => send('table:insertColumn', {client, payload}),
     onDeleteRow: (index) => {
       const columnName = state.table.columns[index].name
-      notie.confirm(`Delete column ${columnName}?`, 'Yes, delete', 'Cancel', () => send('table:deleteColumn', {connection, index}))
+      notie.confirm(`Delete column ${columnName}?`, 'Yes, delete', 'Cancel', () => send('table:deleteColumn', {client, index}))
     }
   })
 }

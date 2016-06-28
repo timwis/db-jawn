@@ -3,76 +3,31 @@
  * Extends the base client, database.js to provide postgres-specific
  * queries for certain methods. Inherits the rest.
  */
-const database = require('./database')
+const knex = require('knex')
 
-const postgres = {
-  validTypes: [
-    'bigint',
-    'bigserial',
-    'bit',
-    'bit varying',
-    'bool',
-    'boolean',
-    'box',
-    'bytea',
-    'char',
-    'character',
-    'character varying',
-    'cidr',
-    'circle',
-    'date',
-    'decimal',
-    'double precision',
-    'float4',
-    'float8',
-    'inet',
-    'int, int4',
-    'int2',
-    'int8',
-    'integer',
-    'interval',
-    'json',
-    'line',
-    'lseg',
-    'macaddr',
-    'money',
-    'numeric',
-    'path',
-    'point',
-    'polygon',
-    'real',
-    'serial',
-    'serial2',
-    'serial4',
-    'serial8',
-    'smallint',
-    'smallserial',
-    'text',
-    'time without time zone',
-    'time with time zone',
-    'time',
-    'timestamp without time zone',
-    'timestamp with time zone',
-    'timestamp',
-    'timestamptz',
-    'timetz',
-    'tsquery',
-    'tsvector',
-    'txid_snapshot',
-    'uuid',
-    'varbit',
-    'varchar',
-    'xml'
-  ],
+const Database = require('./database')
+const validTypes = require('./valid-types/postgres-types')
 
-  getTables: (connection) => connection.raw(`
-    SELECT tablename
-    FROM pg_catalog.pg_tables
-    WHERE schemaname='public'
-    ORDER BY tablename`),
+module.exports = class Postgres extends Database {
+  constructor (config) {
+    super(config)
+    this.connection = knex({ client: 'pg', connection: config })
+  }
 
-  getPrimaryKey: (connection, table) => {
-    return connection.raw(`
+  getValidTypes () {
+    return validTypes
+  }
+
+  getTables () {
+    return this.connection.raw(`
+      SELECT tablename
+      FROM pg_catalog.pg_tables
+      WHERE schemaname='public'
+      ORDER BY tablename`)
+  }
+
+  getPrimaryKey (table) {
+    return this.connection.raw(`
       SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type
       FROM pg_index i
       JOIN pg_attribute a
@@ -81,9 +36,9 @@ const postgres = {
       WHERE i.indrelid = ?::regclass
         AND i.indisprimary`, table)
       .then((results) => results.rows.length > 0 ? results.rows[0].attname : null)
-  },
+  }
 
-  updateColumn: (connection, table, column, changes) => {
+  updateColumn (table, column, changes) {
     const alterations = []
 
     if (changes.type) {
@@ -105,13 +60,10 @@ const postgres = {
       const sql = 'ALTER TABLE :table: ' + alterations.join(', ')
       const bindings = Object.assign({}, changes, { table, column })
       // defaultValue doesn't seem to work as a binding, so this is a hacky workaround
-      return connection.raw(connection.raw(sql, bindings).toString())
+      return this.connection.raw(this.connection.raw(sql, bindings).toString())
     } else {
       // noop
       return Promise.resolve()
     }
   }
 }
-
-// Similar to class extends, but pure prototypal inheritance
-module.exports = Object.assign(Object.create(database), postgres)
