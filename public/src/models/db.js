@@ -1,11 +1,12 @@
-const knex = require('knex')
-
-const Postgres = require('../clients/postgres')
+const clients = {
+  pg: require('../clients/postgres')
+}
 
 const model = {
   namespace: 'db',
   state: {
     config: {
+      clientType: '',
       host: '',
       user: '',
       password: '',
@@ -18,12 +19,15 @@ const model = {
     isCreatingTable: false
   },
   reducers: {
-    config: (action, state) => ({
-      config: action.payload,
-      client: new Postgres(action.payload), // stored in state because knex.js creates connection pools
-      tables: [],
-      fetchedTables: false
-    }),
+    config: (action, state) => {
+      const Client = clients[action.payload.clientType]
+      return {
+        config: action.payload,
+        client: new Client(action.payload), // stored in state because knex.js creates connection pools
+        tables: [],
+        fetchedTables: false
+      }
+    },
     receiveTableList: (action, state) => {
       return { tables: action.payload, fetchedTables: true }
     },
@@ -72,7 +76,7 @@ const model = {
 if (process.env.NODE_ENV === 'development') {
   const initialCredentials = require('../config')
   model.state.config = initialCredentials
-  model.state.client = new Postgres(initialCredentials)
+  model.state.client = new clients.pg(initialCredentials) // eslint-disable-line
 }
 
 module.exports = model
