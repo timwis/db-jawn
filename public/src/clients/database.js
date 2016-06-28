@@ -38,8 +38,9 @@ module.exports = {
     if (payload.maxLength) sql.push(`(${+payload.maxLength})`)
     if (payload.nullable === 'false') sql.push('NOT NULL')
     if (payload.defaultValue) sql.push('DEFAULT :defaultValue')
-    return connection.raw(sql.join(' '), bindings)
   },
+    // defaultValue doesn't seem to work as a binding, so this is a hacky workaround
+    return this.connection.raw(this.connection.raw(sql.join(' '), bindings).toString())
 
   updateColumn: (connection, table, column, changes) => {
     throw new Error('updateColumn method not implemented')
