@@ -1,6 +1,8 @@
 const choo = require('choo')
 const getFormData = require('get-form-data')
 
+const Dropdown = require('../components/dropdown')
+
 module.exports = (params, state, send) => {
   const onSubmit = (e) => {
     const payload = getFormData(e.target)
@@ -10,10 +12,22 @@ module.exports = (params, state, send) => {
   }
 
   const config = state.db.config
+
+  const dropdown = Dropdown({
+    items: [{ value: 'pg', label: 'Postgres' }],
+    selected: config.clientType,
+    attributes: { id: 'clientType', class: 'form-control' }
+  })
+
   return choo.view`
     <div>
       <h1>Connect</h1>
       <form onsubmit=${onSubmit}>
+        <fieldset class="form-group">
+          <label for="clientType">Client</label>
+          ${dropdown}
+        </fieldset>
+
         <fieldset class="form-group">
           <label for="host">Host</label>
           <input value="${config.host}" id="host" placeholder="localhost" class="form-control">
