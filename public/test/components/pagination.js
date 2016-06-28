@@ -1,4 +1,5 @@
 const test = require('tape')
+require('jsdom-global')()
 
 const Pagination = require('../../src/components/pagination')
 
