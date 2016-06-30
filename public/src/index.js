@@ -14,6 +14,7 @@ const views = {
 
 const app = choo()
 
+app.model(require('./models/app'))
 app.model(require('./models/db'))
 app.model(require('./models/table'))
 
