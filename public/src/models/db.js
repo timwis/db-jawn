@@ -13,20 +13,17 @@ const model = {
       database: '',
       ssl: false
     },
-    client: null,
+    client: null, // stored in state because knex.js creates connection pools
     tables: [],
     fetchedTables: false,
     isCreatingTable: false
   },
   reducers: {
-    config: (action, state) => {
-      const Client = clients[action.payload.clientType]
-      return {
-        config: action.payload,
-        client: new Client(action.payload), // stored in state because knex.js creates connection pools
+    receiveConnection: (action, state) => {
+      return Object.assign(action, {
         tables: [],
         fetchedTables: false
-      }
+      })
     },
     receiveTableList: (action, state) => {
       return { tables: action.payload, fetchedTables: true }
@@ -47,6 +44,11 @@ const model = {
     }
   },
   effects: {
+    connect: (action, state, send) => {
+      const Client = clients[action.payload.clientType]
+      const client = new Client(action.payload)
+      send('db:receiveConnection', { client, config: action.payload })
+    },
     getTableList: (action, state, send) => {
       state.client.getTables()
       .then((response) => {

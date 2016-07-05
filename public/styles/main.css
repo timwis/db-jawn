@@ -13,3 +13,11 @@
 .database-table {
   padding-top: 10px;
 }
+
+.global-alert {
+  position: absolute;
+  top: 7px;
+  left: 10%;
+  right: 10%;
+  z-index: 99;
+}
