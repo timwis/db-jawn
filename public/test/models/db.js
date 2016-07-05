@@ -1,5 +1,4 @@
 const test = require('tape')
-require('jsdom-global')()
 
 const db = require('../../src/models/db')
 

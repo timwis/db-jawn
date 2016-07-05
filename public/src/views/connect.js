@@ -6,7 +6,7 @@ const Dropdown = require('../components/dropdown')
 module.exports = (params, state, send) => {
   const onSubmit = (e) => {
     const payload = getFormData(e.target)
-    send('db:config', {payload})
+    send('db:connect', {payload})
     window.location.hash = 'tables'
     e.preventDefault()
   }
