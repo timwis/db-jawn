@@ -1,11 +1,3 @@
-const alertTypeMap = {
-  success: 1,
-  warning: 2,
-  error: 3,
-  info: 4
-}
-const defaultType = alertTypeMap.error
-
 module.exports = {
   namespace: 'app',
   state: {
@@ -13,16 +5,22 @@ module.exports = {
   },
   reducers: {
     setAlert: (action, state) => {
-      const alert = Object.assign({}, action, {
-        type: action.type
-          ? (alertTypeMap[action.type] || defaultType) // in case type is provided but not an actual option
-          : defaultType,
-        duration: action.duration || 3
-      })
-      return {alert}
+      return { alert: action }
     },
     clearAlert: (action, state) => {
       return { alert: {} }
+    }
+  },
+  effects: {
+    alert: (action, state, send) => {
+      const id = Math.random() // used to ensure timeout removes correct alert
+      send('app:setAlert', { msg: action.msg, _id: id })
+      const duration = action.duration || 5000
+      window.setTimeout(() => {
+        if (state.alert._id && state.alert._id === id) {
+          send('app:clearAlert')
+        }
+      }, duration)
     }
   }
 }

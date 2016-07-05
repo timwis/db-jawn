@@ -1,14 +1,15 @@
 const html = require('choo').view
-const notie = require('notie')
+
+const Alert = require('../components/alert')
 
 module.exports = (view) => (params, state, send) => {
-  if (state.app.alert.msg) {
-    const alert = state.app.alert
-    notie.alert(alert.type, alert.msg, alert.duration)
-    send('app:clearAlert')
-  }
+  const alert = state.app.alert.msg ? Alert({
+    msg: state.app.alert.msg,
+    onDismiss: (e) => send('app:clearAlert')
+  }) : ''
   return html`
     <div>
+      ${alert}
       <nav class="navbar navbar-light bg-faded">
         <a class="navbar-brand" href="#">Dataface</a>
         <ul class="nav navbar-nav">
