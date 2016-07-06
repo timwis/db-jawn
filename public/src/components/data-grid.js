@@ -1,4 +1,4 @@
-const html = require('choo').view
+const html = require('choo/html')
 const {zipObject} = require('lodash')
 const noop = () => {}
 

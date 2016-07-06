@@ -1,9 +1,9 @@
-const choo = require('choo')
+const html = require('choo/html')
 const getFormData = require('get-form-data')
 
 const Dropdown = require('../components/dropdown')
 
-module.exports = (params, state, send) => {
+module.exports = (state, prev, send) => {
   const onSubmit = (e) => {
     const payload = getFormData(e.target)
     send('db:connect', {payload})
@@ -19,7 +19,7 @@ module.exports = (params, state, send) => {
     attributes: { id: 'clientType', class: 'form-control' }
   })
 
-  return choo.view`
+  return html`
     <div>
       <h1>Connect</h1>
       <form onsubmit=${onSubmit}>

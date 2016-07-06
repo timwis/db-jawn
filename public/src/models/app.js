@@ -4,23 +4,24 @@ module.exports = {
     alert: {}
   },
   reducers: {
-    setAlert: (action, state) => {
+    setAlert: (data, state) => {
       return { alert: action }
     },
-    clearAlert: (action, state) => {
+    clearAlert: (data, state) => {
       return { alert: {} }
     }
   },
   effects: {
-    alert: (action, state, send) => {
+    alert: (data, state, send, done) => {
       const id = Math.random() // used to ensure timeout removes correct alert
-      send('app:setAlert', { msg: action.msg, _id: id })
-      const duration = action.duration || 5000
-      window.setTimeout(() => {
-        if (state.alert._id && state.alert._id === id) {
-          send('app:clearAlert')
-        }
-      }, duration)
+      const duration = data.duration || 5000
+      send('app:setAlert', { msg: data.msg, _id: id }, () => {
+        window.setTimeout(() => {
+          if (state.alert._id && state.alert._id === id) {
+            send('app:clearAlert', null, done)
+          }
+        }, duration)
+      })
     }
   }
 }

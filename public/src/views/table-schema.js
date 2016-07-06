@@ -2,8 +2,8 @@ const notie = require('notie')
 
 const dataGrid = require('../components/data-grid')
 
-module.exports = (params, state, send) => {
-  const table = params.name
+module.exports = (state, prev, send) => {
+  const table = state.params.name
   const client = state.db.client
   if (table && client && state.table.name !== table) {
     send('table:getTable', { client, table })

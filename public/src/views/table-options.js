@@ -1,14 +1,17 @@
-const html = require('choo').view
+const html = require('choo/html')
 const notie = require('notie')
 
-module.exports = (params, state, send) => html`
-  <div>
-    <button type="button" class="btn btn-danger" onclick=${(e) => {
-      notie.confirm(`Delete table ${params.name}?`, 'Yes, delete', 'Cancel', () => {
-        send('db:deleteTable', { name: params.name })
-        window.location.hash = 'tables'
-      })
-    }}>
-      Delete table "${params.name}"
-    </button>
-  </div>`
+module.exports = (state, prev, send) => {
+  const table = state.params.name
+  return html`
+    <div>
+      <button type="button" class="btn btn-danger" onclick=${(e) => {
+        notie.confirm(`Delete table ${table}?`, 'Yes, delete', 'Cancel', () => {
+          send('db:deleteTable', { name: table })
+          window.location.hash = 'tables'
+        })
+      }}>
+        Delete table "${table}"
+      </button>
+    </div>`
+}

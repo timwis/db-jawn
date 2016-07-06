@@ -11,54 +11,54 @@ module.exports = {
     offset: 0
   },
   reducers: {
-    receiveTable: (action, state) => {
-      return Object.assign({}, action.payload, { selectedRowIndex: null, offset: 0 })
+    receiveTable: (data, state) => {
+      return Object.assign({}, data.payload, { selectedRowIndex: null, offset: 0 })
     },
-    receiveRows: (action, state) => {
-      return { rows: action.rows }
+    receiveRows: (data, state) => {
+      return { rows: data.rows }
     },
-    setOffset: (action, state) => {
-      return { offset: action.newOffset }
+    setOffset: (data, state) => {
+      return { offset: data.newOffset }
     },
-    setSelectedRow: (action, state) => {
-      return { selectedRowIndex: action.index }
+    setSelectedRow: (data, state) => {
+      return { selectedRowIndex: data.index }
     },
-    receiveRowUpdate: (action, state) => {
+    receiveRowUpdate: (data, state) => {
       const newRows = state.rows.slice()
-      Object.assign(newRows[action.index], action.payload)
+      Object.assign(newRows[data.index], data.payload)
       return { rows: newRows }
     },
-    receiveRowDeletion: (action, state) => {
+    receiveRowDeletion: (data, state) => {
       const newRows = [
-        ...state.rows.slice(0, action.index),
-        ...state.rows.slice(action.index + 1)
+        ...state.rows.slice(0, data.index),
+        ...state.rows.slice(data.index + 1)
       ]
       return { rows: newRows, rowCount: state.rowCount - 1 }
     },
-    receiveNewRow: (action, state) => {
-      const newRows = [ ...state.rows, action.payload ]
+    receiveNewRow: (data, state) => {
+      const newRows = [ ...state.rows, data.payload ]
       return { rows: newRows, rowCount: state.rowCount + 1 }
     },
-    receiveColumnUpdate: (action, state) => {
+    receiveColumnUpdate: (data, state) => {
       const newColumns = state.columns.slice()
-      Object.assign(newColumns[action.index], action.payload)
+      Object.assign(newColumns[data.index], data.payload)
       return { columns: newColumns }
     },
-    receiveNewColumn: (action, state) => {
-      const newColumns = [ ...state.columns, action.payload ]
+    receiveNewColumn: (data, state) => {
+      const newColumns = [ ...state.columns, data.payload ]
       return { columns: newColumns }
     },
-    receiveColumnDeletion: (action, state) => {
+    receiveColumnDeletion: (data, state) => {
       const newColumns = [
-        ...state.columns.slice(0, action.index),
-        ...state.columns.slice(action.index + 1)
+        ...state.columns.slice(0, data.index),
+        ...state.columns.slice(data.index + 1)
       ]
       return { columns: newColumns }
     }
   },
   effects: {
-    getTable: (action, state, send) => {
-      const { client, table } = action
+    getTable: (data, state, send, done) => {
+      const { client, table } = data
       Promise.all([
         client.getSchema(table),
         client.getPrimaryKey(table),
@@ -82,18 +82,19 @@ module.exports = {
         }
         return payload
       })
-      .then((payload) => send('table:receiveTable', {payload}))
+      .then((payload) => send('table:receiveTable', {payload}, done))
     },
-    paginate: (action, state, send) => {
-      const { client, table, newOffset } = action
+    paginate: (data, state, send, done) => {
+      const { client, table, newOffset } = data
       client.getRows(table, state.limit, newOffset)
       .then((rows) => {
-        send('table:receiveRows', {rows})
-        send('table:setOffset', {newOffset})
+        send('table:receiveRows', {rows}, () => {
+          send('table:setOffset', {newOffset}, done)
+        })
       })
     },
-    updateRow: (action, state, send) => {
-      const { client, index, payload } = action
+    updateRow: (data, state, send, done) => {
+      const { client, index, payload } = data
       if (Object.keys(payload).length) {
         const row = state.rows[index]
         const primaryKey = state.primaryKey
@@ -106,21 +107,21 @@ module.exports = {
 
         client.updateRow(state.name, payload, conditions)
         .then((results) => {
-          if (results > 0) send('table:receiveRowUpdate', { index, payload })
+          if (results > 0) send('table:receiveRowUpdate', { index, payload }, done)
         })
       }
     },
-    insertRow: (action, state, send) => {
-      const { client, payload } = action
+    insertRow: (data, state, send, done) => {
+      const { client, payload } = data
       if (Object.keys(payload).length) {
         client.insertRow(state.name, payload)
         .then((results) => {
-          if (results.length > 0) send('table:receiveNewRow', { payload: results[0] })
+          if (results.length > 0) send('table:receiveNewRow', { payload: results[0] }, done)
         })
       }
     },
-    deleteRow: (action, state, send) => {
-      const { client, index } = action
+    deleteRow: (data, state, send, done) => {
+      const { client, index } = data
       const row = state.rows[index]
       const primaryKey = state.primaryKey
 
@@ -132,11 +133,11 @@ module.exports = {
 
       client.deleteRow(state.name, conditions)
       .then((deletedCount) => {
-        if (deletedCount > 0) send('table:receiveRowDeletion', {index})
+        if (deletedCount > 0) send('table:receiveRowDeletion', {index}, done)
       })
     },
-    updateColumn: (action, state, send) => {
-      const { client, index, payload } = action
+    updateColumn: (data, state, send, done) => {
+      const { client, index, payload } = data
       if (Object.keys(payload).length) {
         const column = state.columns[index].name
         const query = client.updateColumn(state.name, column, payload)
@@ -147,28 +148,28 @@ module.exports = {
         }
 
         query.then((results) => {
-          send('table:receiveColumnUpdate', { index, payload })
+          send('table:receiveColumnUpdate', { index, payload }, done)
         })
       }
     },
-    insertColumn: (action, state, send) => {
-      const { client, payload } = action
+    insertColumn: (data, state, send, done) => {
+      const { client, payload } = data
       if (Object.keys(payload).length) {
         client.insertColumn(state.name, payload)
         .then((results) => client.getSchema(state.name))
         .then((columnsResults) => {
           const newColumn = columnsResults[payload.name] || {}
           newColumn.name = payload.name // not included by default in knex column object
-          send('table:receiveNewColumn', { payload: newColumn })
+          send('table:receiveNewColumn', { payload: newColumn }, done)
         })
       }
     },
-    deleteColumn: (action, state, send) => {
-      const { client, index } = action
+    deleteColumn: (data, state, send, done) => {
+      const { client, index } = data
       const column = state.columns[index]
       client.deleteColumn(state.name, column.name)
       .then((results) => {
-        send('table:receiveColumnDeletion', {index})
+        send('table:receiveColumnDeletion', {index}, done)
       })
     }
   }
