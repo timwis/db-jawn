@@ -5,16 +5,16 @@ const db = require('../../src/models/db')
 test('db model: reducers: receiveNewTable', (t) => {
   t.plan(1)
   const state = { tables: ['foo', 'bar'] }
-  const action = { name: 'baz' }
-  const result = db.reducers.receiveNewTable(action, state)
+  const data = { name: 'baz' }
+  const result = db.reducers.receiveNewTable(data, state)
   t.equal(result.tables[2], 'baz', 'new table appended to end')
 })
 
 test('db model: reducers: receiveTableDeletion', (t) => {
   t.plan(1)
   const state = { tables: ['foo', 'bar', 'baz'] }
-  const action = { index: 1 }
-  const result = db.reducers.receiveTableDeletion(action, state)
+  const data = { index: 1 }
+  const result = db.reducers.receiveTableDeletion(data, state)
   t.equal(result.tables.length, 2)
 })
 

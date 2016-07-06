@@ -21,7 +21,7 @@ test('table model: effects: getTable', (t) => {
     { name: 'name', dataType: 'string' }
   ]
   const tableName = 'users'
-  const action = { client, table: tableName }
+  const data = { client, table: tableName }
   const send = (event, data) => {
     t.equal(event, 'table:receiveTable', 'calls correct reducer')
     t.deepEqual(data.payload.columns, expectedColumns, 'mapped columns to array')
@@ -29,5 +29,5 @@ test('table model: effects: getTable', (t) => {
     t.equal(data.payload.rowCount, 2, 'rowCount converted to number')
     t.equal(data.payload.primaryKey, 'id', 'primary key correct')
   }
-  table.effects.getTable(action, {}, send)
+  table.effects.getTable(data, {}, send)
 })

@@ -1,6 +1,6 @@
-const html = require('choo').view
+const html = require('choo/html')
 
-module.exports = (params, state, send) => {
+module.exports = (state, prev, send) => {
   if (state.db.client && !state.db.fetchedTables) {
     send('db:getTableList')
   }
@@ -12,7 +12,7 @@ module.exports = (params, state, send) => {
     </div>`
 
   function tableItem (name, index) {
-    const isActive = params.name === name
+    const isActive = state.params.name === name
     return html`
       <a href="#tables/${name}" class="list-group-item ${isActive && 'active'}">
         ${name}

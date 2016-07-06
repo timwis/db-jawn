@@ -1,8 +1,8 @@
-const html = require('choo').view
+const html = require('choo/html')
 
 const Alert = require('../components/alert')
 
-module.exports = (view) => (params, state, send) => {
+module.exports = (view) => (state, prev, send) => {
   const alert = state.app.alert.msg ? Alert({
     msg: state.app.alert.msg,
     onDismiss: (e) => send('app:clearAlert')
@@ -22,7 +22,7 @@ module.exports = (view) => (params, state, send) => {
         </ul>
       </nav>
       <div id="main" class="container-fluid">
-        ${view(params, state, send)}
+        ${view(state, prev, send)}
       </div>
     </div>`
 }

@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "bootstrap": "^4.0.0-alpha.2",
-    "choo": "^2.0.0",
+    "choo": "^3.0.1",
     "font-awesome": "^4.6.3",
     "get-form-data": "^1.2.5",
     "knex": "^0.11.7",

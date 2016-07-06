@@ -19,56 +19,56 @@ const model = {
     isCreatingTable: false
   },
   reducers: {
-    receiveConnection: (action, state) => {
-      return Object.assign(action, {
+    receiveConnection: (data, state) => {
+      return Object.assign(data, {
         tables: [],
         fetchedTables: false
       })
     },
-    receiveTableList: (action, state) => {
-      return { tables: action.payload, fetchedTables: true }
+    receiveTableList: (data, state) => {
+      return { tables: data.payload, fetchedTables: true }
     },
-    receiveNewTable: (action, state) => {
-      const newTables = [...state.tables, action.name]
+    receiveNewTable: (data, state) => {
+      const newTables = [...state.tables, data.name]
       return { tables: newTables }
     },
-    setCreatingTable: (action, state) => {
-      return { isCreatingTable: action.value }
+    setCreatingTable: (data, state) => {
+      return { isCreatingTable: data.value }
     },
-    receiveTableDeletion: (action, state) => {
+    receiveTableDeletion: (data, state) => {
       const newTables = [
-        ...state.tables.slice(0, action.index),
-        ...state.tables.slice(action.index + 1)
+        ...state.tables.slice(0, data.index),
+        ...state.tables.slice(data.index + 1)
       ]
       return { tables: newTables }
     }
   },
   effects: {
-    connect: (action, state, send) => {
-      const Client = clients[action.payload.clientType]
-      const client = new Client(action.payload)
-      send('db:receiveConnection', { client, config: action.payload })
+    connect: (data, state, send, done) => {
+      const Client = clients[data.payload.clientType]
+      const client = new Client(data.payload)
+      send('db:receiveConnection', { client, config: data.payload }, done)
     },
-    getTableList: (action, state, send) => {
+    getTableList: (data, state, send, done) => {
       state.client.getTables()
       .then((response) => {
         const tables = response.rows.map((table) => table.tablename)
-        send('db:receiveTableList', { payload: tables })
+        send('db:receiveTableList', { payload: tables }, done)
       })
     },
-    createTable: (action, state, send) => {
-      const name = action.name
+    createTable: (data, state, send, done) => {
+      const name = data.name
       state.client.createTable(name)
       .then((response) => {
-        send('db:receiveNewTable', {name})
+        send('db:receiveNewTable', {name}, done)
       })
     },
-    deleteTable: (action, state, send) => {
-      const name = action.name
+    deleteTable: (data, state, send, done) => {
+      const name = data.name
       const index = state.tables.findIndex((table) => table === name)
       state.client.deleteTable(name)
       .then((response) => {
-        send('db:receiveTableDeletion', {index})
+        send('db:receiveTableDeletion', {index}, done)
       })
     }
   }
