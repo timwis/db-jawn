@@ -94,7 +94,7 @@ module.exports = ({ columns, rows, selectedRowIndex,
   function saveEditButton (index) {
     return html`
       <i class="fa fa-save" onclick=${(e) => {
-        const row = e.target.closest('tr')
+        const row = e.target.parentNode.parentNode // closest('tr') is preferable but doesn't work in jsdom
         const isNewRow = index >= rows.length
         if (isRowValid(row)) {
           onSelectRow(null)
@@ -119,11 +119,27 @@ module.exports = ({ columns, rows, selectedRowIndex,
     return zipObject(columnKeys, rowValues)
   }
 
+  // Would be nice to merge this with getRowData but the validation callbacks expect [{key: val}, {key: val}]
+  function getRowCells (row) {
+    const rowCells = Array.from(row.children).slice(2) // first 2 columns are controls
+    const columnKeys = columns.map((column) => column.key || column)
+    return zipObject(columnKeys, rowCells)
+  }
+
   // Confirm every column is valid. Can't just check for .invalid classes because
   // user may not have typed anything in a column at all, which wouldn't have run validation
   function isRowValid (row) {
     const rowData = getRowData(row)
+    const rowCells = getRowCells(row)
+    const validationResults = []
+
     return columns.filter((column) => typeof column.validate === 'function')
-      .every((column) => column.validate(rowData[column.key || column], rowData))
+      .map((column) => {
+        const columnKey = column.key || column
+        const isValid = column.validate(rowData[columnKey], rowData)
+        rowCells[columnKey].classList.toggle('invalid', !isValid)
+        return isValid 
+      })
+      .every((isValid) => isValid)
   }
 }
