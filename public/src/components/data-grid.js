@@ -94,7 +94,7 @@ module.exports = ({ columns, rows, selectedRowIndex,
   function saveEditButton (index) {
     return html`
       <i class="fa fa-save" onclick=${(e) => {
-        const row = e.target.closest('tr')
+        const row = e.target.parentNode.parentNode // closest('tr') is preferable but doesn't work in jsdom
         const isNewRow = index >= rows.length
         if (isRowValid(row)) {
           onSelectRow(null)

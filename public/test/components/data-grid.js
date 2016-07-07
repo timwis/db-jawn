@@ -63,3 +63,22 @@ test('data grid: clicking blank row fires selected event on new row index', (t) 
   const blankRow = tree.querySelector('tbody tr:last-child td')
   blankRow.dispatchEvent(new window.Event('click'))
 })
+
+test('data grid: pre-save validation marks invalid cells', (t) => {
+  t.plan(1)
+  const columns = [
+    { key: 'name' },
+    {
+      key: 'email',
+      validate: (value, row) => '@'.indexOf(value) !== -1 // value.includes('@') is preferrable but tests fail somehow
+    }
+  ]
+  const rows = [{ name: 'foo', email: 'bar' }]
+  const tree = dataGrid({
+    columns,
+    rows,
+    selectedRowIndex: 0
+  })
+  tree.querySelector('tr.selected td:first-child .fa-save').dispatchEvent(new window.MouseEvent('click', {view: window, bubbles: true, cancelable: true}))
+  t.ok(tree.querySelector('tr.selected td:last-child').classList.contains('invalid'), 'marks email cell invalid')
+})
