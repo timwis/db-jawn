@@ -5,7 +5,7 @@ module.exports = {
   },
   reducers: {
     setAlert: (data, state) => {
-      return { alert: action }
+      return { alert: data }
     },
     clearAlert: (data, state) => {
       return { alert: {} }

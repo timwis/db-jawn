@@ -83,6 +83,11 @@ module.exports = {
         return payload
       })
       .then((payload) => send('table:receiveTable', {payload}, done))
+      .catch((err) => {
+        console.error(err)
+        send('app:alert', { msg: `Error reading table ${table}` }, done)
+        window.location.hash = 'tables' // prevent infinite loop
+      })
     },
     paginate: (data, state, send, done) => {
       const { client, table, newOffset } = data
@@ -91,6 +96,10 @@ module.exports = {
         send('table:receiveRows', {rows}, () => {
           send('table:setOffset', {newOffset}, done)
         })
+      })
+      .catch((err) => {
+        console.error(err)
+        send('app:alert', { msg: `Error reading rows at offset ${newOffset}`}, done)
       })
     },
     updateRow: (data, state, send, done) => {
@@ -109,6 +118,10 @@ module.exports = {
         .then((results) => {
           if (results > 0) send('table:receiveRowUpdate', { index, payload }, done)
         })
+        .catch((err) => {
+          console.error(err)
+          send('app:alert', { msg: `Error updating row ${index}` }, done)
+        })
       }
     },
     insertRow: (data, state, send, done) => {
@@ -117,6 +130,10 @@ module.exports = {
         client.insertRow(state.name, payload)
         .then((results) => {
           if (results.length > 0) send('table:receiveNewRow', { payload: results[0] }, done)
+        })
+        .catch((err) => {
+          console.error(err)
+          send('app:alert', { msg: 'Error inserting row' }, done)
         })
       }
     },
@@ -135,6 +152,10 @@ module.exports = {
       .then((deletedCount) => {
         if (deletedCount > 0) send('table:receiveRowDeletion', {index}, done)
       })
+      .catch((err) => {
+        console.error(err)
+        send('app:alert', { msg: `Error deleting row ${index}` }, done)
+      })
     },
     updateColumn: (data, state, send, done) => {
       const { client, index, payload } = data
@@ -150,6 +171,10 @@ module.exports = {
         query.then((results) => {
           send('table:receiveColumnUpdate', { index, payload }, done)
         })
+        .catch((err) => {
+          console.error(err)
+          send('app:alert', { msg: `Error updating column ${column}` }, done)
+        })
       }
     },
     insertColumn: (data, state, send, done) => {
@@ -162,14 +187,22 @@ module.exports = {
           newColumn.name = payload.name // not included by default in knex column object
           send('table:receiveNewColumn', { payload: newColumn }, done)
         })
+        .catch((err) => {
+          console.error(err)
+          send('app:alert', { msg: 'Error inserting column' }, done)
+        })
       }
     },
     deleteColumn: (data, state, send, done) => {
       const { client, index } = data
-      const column = state.columns[index]
-      client.deleteColumn(state.name, column.name)
+      const column = state.columns[index].name
+      client.deleteColumn(state.name, column)
       .then((results) => {
         send('table:receiveColumnDeletion', {index}, done)
+      })
+      .catch((err) => {
+        console.error(err)
+        send('app:alert', { msg: `Error deleting column ${column}` }, done)
       })
     }
   }

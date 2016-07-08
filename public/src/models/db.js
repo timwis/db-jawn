@@ -55,12 +55,24 @@ const model = {
         const tables = response.rows.map((table) => table.tablename)
         send('db:receiveTableList', { payload: tables }, done)
       })
+      .catch((err) => {
+        // Since we can't detect failure in connect, we'll do it here
+        // and reset the connection on an error
+        console.error(err)
+        send('db:receiveConnection', { client: null }, () => {
+          send('app:alert', { msg: 'Error fetching tables' }, done)
+        })
+      })
     },
     createTable: (data, state, send, done) => {
       const name = data.name
       state.client.createTable(name)
       .then((response) => {
         send('db:receiveNewTable', {name}, done)
+      })
+      .catch((err) => {
+        console.error(err)
+        send('app:alert', { msg: 'Error creating table' }, done)
       })
     },
     deleteTable: (data, state, send, done) => {
@@ -69,6 +81,10 @@ const model = {
       state.client.deleteTable(name)
       .then((response) => {
         send('db:receiveTableDeletion', {index}, done)
+      })
+      .catch((err) => {
+        console.error(err)
+        send('app:alert', { msg: 'Error deleting table' }, done)
       })
     }
   }
