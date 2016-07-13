@@ -55,6 +55,14 @@ const model = {
         const tables = response.rows.map((table) => table.tablename)
         send('db:receiveTableList', { payload: tables }, done)
       })
+      .catch((err) => {
+        // Since we can't detect failure in connect, we'll do it here
+        // and reset the connection on an error
+        // https://github.com/tgriesser/knex/issues/1542
+        send('db:receiveConnection', { client: null }, () => {
+          done({ msg: 'Error fetching tables' })
+        })
+      })
     },
     createTable: (data, state, send, done) => {
       const name = data.name
@@ -62,6 +70,7 @@ const model = {
       .then((response) => {
         send('db:receiveNewTable', {name}, done)
       })
+      .catch((err) => done({ msg: 'Error creating table' }))
     },
     deleteTable: (data, state, send, done) => {
       const name = data.name
@@ -69,7 +78,9 @@ const model = {
       state.client.deleteTable(name)
       .then((response) => {
         send('db:receiveTableDeletion', {index}, done)
+        window.location.hash = 'tables'
       })
+      .catch((err) => done({ msg: 'Error deleting table' }))
     }
   }
 }

@@ -8,7 +8,6 @@ module.exports = (state, prev, send) => {
       <button type="button" class="btn btn-danger" onclick=${(e) => {
         notie.confirm(`Delete table ${table}?`, 'Yes, delete', 'Cancel', () => {
           send('db:deleteTable', { name: table })
-          window.location.hash = 'tables'
         })
       }}>
         Delete table "${table}"
