@@ -9,7 +9,7 @@ module.exports = (view) => (state, prev, send) => {
   }) : ''
   return html`
     <div>
-      ${alert}
+      <div class="global-alert">${alert}</div>
       <nav class="navbar navbar-light bg-faded">
         <a class="navbar-brand" href="#">Dataface</a>
         <ul class="nav navbar-nav">

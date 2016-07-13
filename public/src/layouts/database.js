@@ -8,6 +8,7 @@ module.exports = (view, id) => (state, prev, send) => {
   const tabItems = [
     { key: 'rows', label: 'Rows', href: `#tables/${table}` },
     { key: 'schema', label: 'Schema', href: `#tables/${table}/schema` },
+    { key: 'query', label: 'Query', href: `#tables/${table}/query` },
     { key: 'options', label: 'Options', href: `#tables/${table}/options` }
   ]
 

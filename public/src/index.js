@@ -9,7 +9,8 @@ const views = {
   connect: require('./views/connect'),
   tableRows: require('./views/table-rows'),
   tableSchema: require('./views/table-schema'),
-  tableOptions: require('./views/table-options')
+  tableOptions: require('./views/table-options'),
+  query: require('./views/query')
 }
 
 const app = choo({
@@ -23,13 +24,15 @@ const app = choo({
 app.model(require('./models/app'))
 app.model(require('./models/db'))
 app.model(require('./models/table'))
+app.model(require('./models/query'))
 
 app.router((route) => [
   route('/', layouts.root(views.connect)),
   route('/tables', dbLayout(), [
     route('/:name', dbLayout(views.tableRows, 'rows'), [
       route('/schema', dbLayout(views.tableSchema, 'schema')),
-      route('/options', dbLayout(views.tableOptions, 'options'))
+      route('/options', dbLayout(views.tableOptions, 'options')),
+      route('/query', dbLayout(views.query, 'query'))
     ])
   ])
 ])

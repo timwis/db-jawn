@@ -9,7 +9,7 @@ const noop = () => {}
  */
 module.exports = ({ msg, type = 'danger', onDismiss = {} }) => {
   return html`
-  <div class="global-alert alert alert-${type}" role="alert">
+  <div class="alert alert-${type}" role="alert">
     ${msg}
     ${onDismiss !== noop
       ? html`
