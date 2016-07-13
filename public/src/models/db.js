@@ -58,9 +58,9 @@ const model = {
       .catch((err) => {
         // Since we can't detect failure in connect, we'll do it here
         // and reset the connection on an error
-        console.error(err)
+        // https://github.com/tgriesser/knex/issues/1542
         send('db:receiveConnection', { client: null }, () => {
-          send('app:alert', { msg: 'Error fetching tables' }, done)
+          done({ msg: 'Error fetching tables' })
         })
       })
     },
@@ -70,10 +70,7 @@ const model = {
       .then((response) => {
         send('db:receiveNewTable', {name}, done)
       })
-      .catch((err) => {
-        console.error(err)
-        send('app:alert', { msg: 'Error creating table' }, done)
-      })
+      .catch((err) => done({ msg: 'Error creating table' }))
     },
     deleteTable: (data, state, send, done) => {
       const name = data.name
@@ -81,11 +78,9 @@ const model = {
       state.client.deleteTable(name)
       .then((response) => {
         send('db:receiveTableDeletion', {index}, done)
+        window.location.hash = 'tables'
       })
-      .catch((err) => {
-        console.error(err)
-        send('app:alert', { msg: 'Error deleting table' }, done)
-      })
+      .catch((err) => done({ msg: 'Error deleting table' }))
     }
   }
 }

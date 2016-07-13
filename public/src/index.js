@@ -12,7 +12,13 @@ const views = {
   tableOptions: require('./views/table-options')
 }
 
-const app = choo()
+const app = choo({
+  onError: (err, state, createSend) => {
+    console.error(err)
+    const send = createSend('error')
+    send('app:alert', err)
+  }
+})
 
 app.model(require('./models/app'))
 app.model(require('./models/db'))
