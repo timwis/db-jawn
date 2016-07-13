@@ -86,4 +86,8 @@ module.exports = class Databse {
   deleteRow (table, conditions) {
     return this.connection(table).where(conditions).del().limit(1)
   }
+
+  query (sql) {
+    return this.connection.raw(sql)
+  }
 }
